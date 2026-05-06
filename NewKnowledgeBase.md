@@ -30,6 +30,12 @@ multiple times, append `xN` instead of duplicating.
 - `/health` returns 200 even when the DB is down (`status: "degraded"`). 5xx is reserved for cases where the process should be removed from a load balancer pool. Add `/health/ready` later if pm2/k8s probes need a hard gate
 - Reading `package.json` from a route uses `fs.readFileSync(path.resolve(process.cwd(), 'package.json'))`, NOT `createRequire(import.meta.url)`. The latter looks correct for ESM but breaks under ts-jest's CJS compilation (`tsconfig.test.json` has `module: CommonJS`, which rejects `import.meta`). The fs approach works under both module systems and assumes scripts run from the `api/` directory (true for `tsx`, `jest`, and `node dist/index.js`)
 - App factory uses dependency injection: `buildApp({ db })` rather than reaching for a singleton. Production passes `getDb()`, tests pass a test-DB-bound `Database`. Same pattern for module factories (`buildApiSocialModule({ db })`) and route factories (`buildHealthRoutes({ db })`)
+- Routes never throw raw `Error` — they throw an `AppError` subclass (`HandleResolutionError`, `ValidationError`, etc.) so the global error handler can format consistently
+- The well-known endpoint returns 404 with EMPTY body for ALL resolution failures (malformed handle, not found, reserved name). This avoids leaking which usernames exist via differential responses
+- Reserved usernames must NEVER be removed from the list — only added. A removed reserved name could be claimed by a malicious user who anticipated the removal
+- Reserved username check happens BEFORE the DB query in `UserResolver`. Defense in depth: the DB never sees a query for "admin"
+- The resolve endpoint runs zod validation on its OWN response shape before returning. Cheap insurance: catches drift between the schema and actual data
+- Jest is set to `maxWorkers: 1` so test files run sequentially. They share the `fuzex_social_test` DB and use `truncateAll` between tests; cross-file parallelism would create race conditions. Tradeoff: tests run a few hundred ms slower but are deterministic
 
 ## Database layer
 
@@ -45,20 +51,22 @@ multiple times, append `xN` instead of duplicating.
 
 Current temporary exclusions (must be re-included as their tests land):
 
-- `src/index.ts`                — keep excluded (bootstrap, hard to unit-test)
-- `src/shared/config/**`        — re-include in Prompt 5 (route-level integration)
+- `src/index.ts`                — keep excluded (bootstrap)
+- `src/shared/config/**`        — re-include in Prompt 6 (deployment harness will exercise config validation)
 - `src/shared/logger/**`        — keep excluded (logger config, side-effect heavy)
-- `src/shared/errors/**`        — re-include in Prompt 5 or 6 (need error-throwing route to exercise; happy-path /health doesn't trip them)
-- `src/shared/middleware/errorHandler.ts` — re-include alongside `errors/**`
+- `src/shared/middleware/errorHandler.ts` — re-include in Prompt 6 once another error-throwing path exists in addition to HandleResolutionError
 - `src/shared/db/index.ts`      — keep excluded (singleton)
 - `src/shared/db/migrationRunner.ts` — re-include if pure logic gains tests
 - `src/**/index.ts`             — keep excluded (barrel files)
 
 Re-included in Prompt 4:
-- `src/app.ts`                  ✅ exercised via /health integration test (100% coverage)
-- `src/shared/middleware/**` (except errorHandler) ✅ exercised via /health integration test (correlationId, requestLogger 100%; rateLimit 73%)
+- `src/app.ts`                  ✅
+- `src/shared/middleware/**` (except errorHandler) ✅
 
-When re-including, expect coverage to drop initially. Threshold stays at 70%.
+Re-included in Prompt 5:
+- `src/shared/errors/**`        ✅ (HandleResolutionError exercised by route tests at 100%; AppError at 100%; unused subclasses NotFound/Internal/Unauthorized/Validation at 50%)
+
+Threshold stays at 70% on all metrics.
 
 ## Known Limitations
 

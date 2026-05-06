@@ -22,6 +22,7 @@ module.exports = {
   },
   globalSetup: '<rootDir>/src/shared/testing/jestSetup.ts',
   testTimeout: 15000,
+  maxWorkers: 1,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.test.ts',
@@ -31,7 +32,6 @@ module.exports = {
     '!src/index.ts',
     '!src/shared/config/**',
     '!src/shared/logger/**',
-    '!src/shared/errors/**',
     '!src/shared/middleware/errorHandler.ts',
     '!src/shared/db/migrate.ts',
     '!src/shared/db/migrations/**',

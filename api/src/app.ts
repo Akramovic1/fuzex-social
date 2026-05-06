@@ -54,7 +54,13 @@ export function buildApp(deps: AppDependencies): Hono {
   app.use('*', requestLoggerMiddleware());
   app.use('*', rateLimitMiddleware());
 
-  app.route('/', buildApiSocialModule({ db: deps.db }));
+  app.route(
+    '/',
+    buildApiSocialModule({
+      db: deps.db,
+      handleDomain: config.env.HANDLE_DOMAIN,
+    }),
+  );
 
   registerErrorHandler(app);
 

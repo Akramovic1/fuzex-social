@@ -1,9 +1,29 @@
 # Scripts
 
-Operational scripts for VPS provisioning and deployment.
+Operational scripts for FuzeX social VPS provisioning, deployment, and
+one-off utilities.
 
-## Will be added in later prompts
+| File | Purpose |
+|---|---|
+| `seed-akram.sql` | Inserts the test account `akram` (idempotent) |
 
-- `setup-vps.sh` — idempotent VPS setup (Node, pm2, Postgres)
-- `deploy.sh` — git pull, build, migrate, pm2 reload
-- `seed-akram.sql` — manual seed for Phase 1 testing
+## Coming in Prompt 6
+
+| File | Purpose |
+|---|---|
+| `setup-vps.sh` | Idempotent VPS setup (Node, pm2, Postgres) |
+| `deploy.sh` | git pull, build, migrate, pm2 reload |
+
+## Usage
+
+### seed-akram.sql
+
+Run from the repo root:
+
+```bash
+docker exec -i fuzex-postgres-dev psql -U fuzex_api_dev -d fuzex_social_dev \
+  < scripts/seed-akram.sql
+```
+
+For the test DB (used by Jest), the seed is NOT applied — tests insert their
+own fixtures. Use this seed only for end-to-end manual verification.

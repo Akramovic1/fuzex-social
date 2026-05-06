@@ -30,6 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP integration test infrastructure (appHarness + supertest)
 - 4 integration tests covering /health happy path, X-Request-Id propagation, rate-limit headers
 - app.ts refactored to accept AppDependencies via factory (inversion of control)
+- GET /.well-known/atproto-did endpoint (Postgres-backed handle resolution; replaces temporary Caddy hardcode)
+- GET /v1/resolve/:handle endpoint (public tipping resolver with cache headers)
+- UserResolver service composing UsersRepository with handle parsing/validation
+- handleValidation lib (length, charset, hyphen, all-digit rules) with full unit-test coverage
+- reservedUsernames lib with the locked-in reserved list and regex patterns
+- HandleResolutionError typed error class with USER_NOT_FOUND / INVALID_HANDLE / TIPPING_DISABLED variants
+- zod response schemas (resolveHandleResponseSchema, errorResponseSchema) used in route tests
+- scripts/seed-akram.sql for end-to-end verification
+- Coverage exclusion for errors/** removed — error handler now exercised by route tests
 
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`
