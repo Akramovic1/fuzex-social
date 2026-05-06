@@ -77,6 +77,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - (Phase 1 deployment) `tsc-alias` post-build step rewrites `@/` path aliases in compiled JavaScript. Without it, `node dist/index.js` errors with `ERR_MODULE_NOT_FOUND: Cannot find package '@/shared'` because `tsc` itself does not rewrite paths.
 - (Phase 1 deployment) fuzex-api moved from `api.dev.fuzex.app` to `dev-api.fuzex.app` to avoid Caddy TLS policy collision with the `*.dev.fuzex.app` wildcard on-demand policy. Sibling subdomain pattern allows Caddy to manage the cert directly via Let's Encrypt without PDS `/tls-check` involvement.
+- (Phase 2 deployment) `scripts/deploy.sh`: changed `npm ci --omit=optional` to plain `npm ci`. The `--omit=optional` flag was stripping `firebase-admin`'s transitive `@google-cloud/firestore` submodules, causing a runtime crash with `Cannot find module '@google-cloud/firestore/build/src/path'` when Firestore was imported. Discovered during the first Phase 2 deploy.
+- (Phase 2 deployment, NewKnowledgeBase) Documented that `pm2 reload` reuses the running Node process and may not pick up newly installed `node_modules`; for dependency changes, use `pm2 restart fuzex-api` (full process replacement).
+- (Username validation) `GET /v1/username/check` and `POST /v1/atproto/createAccount` no longer silently lowercase user input. Uppercase letters now produce a clear `UPPERCASE_NOT_ALLOWED` validation reason and the response echoes the user's original input back unmutated. atproto handles remain case-insensitive at the DB level — the validator just refuses to do the lowercasing FOR the caller.
 
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`
