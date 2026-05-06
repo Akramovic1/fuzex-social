@@ -36,6 +36,7 @@ multiple times, append `xN` instead of duplicating.
 - Reserved username check happens BEFORE the DB query in `UserResolver`. Defense in depth: the DB never sees a query for "admin"
 - The resolve endpoint runs zod validation on its OWN response shape before returning. Cheap insurance: catches drift between the schema and actual data
 - Jest is set to `maxWorkers: 1` so test files run sequentially. They share the `fuzex_social_test` DB and use `truncateAll` between tests; cross-file parallelism would create race conditions. Tradeoff: tests run a few hundred ms slower but are deterministic
+- Firestore `Users/{firebase_uid}.username` must be lowercase before mobile calls `POST /v1/atproto/createAccount`. The API rejects uppercase usernames with `UPPERCASE_NOT_ALLOWED`, even if the doc was created with uppercase historically. When debugging or seeding test users, fix existing Firestore docs in-place via firebase-admin: `db.collection("Users").doc(uid).update({username: "lowercase"})`. x1
 
 ## Deployment
 
@@ -96,8 +97,24 @@ multiple times, append `xN` instead of duplicating.
   migration (not just stop serving it) so that a stale request to a
   `username.dev.fuzex.app` URL gets a clean DNS failure rather than
   hitting a stale Caddy route.
-- `pm2 restart` (not `pm2 reload`) is required after `.env` changes —
-  reload reuses the running Node process and won't pick up new env vars.
+- `pm2 restart fuzex-api --update-env` is required after `.env` changes.
+  `pm2 reload` reuses the running Node process and won't pick up new env vars
+  at all. Plain `pm2 restart` (without `--update-env`) restarts the process
+  but pm2 caches env vars from the FIRST process start, so even a restart can
+  silently keep stale values. Always pass `--update-env` after editing `.env`.
+
+## Env file gotchas
+
+- `/opt/fuzex-social/api/.env` had `PDS_ADMIN_PASSWORD` left as the literal placeholder string `PASTE_FROM_PDS_ADMIN_PWD_VARIABLE_HERE` from the initial deploy — never substituted. The api silently shipped this for weeks until the first integration test triggered a PDS admin call that returned 401. Always grep both `/pds/pds.env` and `/opt/fuzex-social/api/.env` for the actual values when debugging integration failures; placeholder sentinels do NOT fail loudly at deploy time. x1
+
+- `docker compose restart <service>` does NOT re-read `env_file`. After editing `/pds/pds.env`, the running pds container keeps its OLD env until you recreate it: `docker compose up -d --force-recreate <service>`. The "restart" verb only restarts the existing container's process; it does not re-evaluate the compose file's environment. Verified by running `docker compose exec pds env` after a restart and seeing the old `PDS_HOSTNAME`. x1
+
+## Firebase Auth REST API for server-side integration testing
+
+- For testing endpoints that require Firebase Bearer auth without booting the mobile app: mint a custom token via firebase-admin `auth().createCustomToken(uid)`, then exchange it for an idToken via `POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=<WEB_API_KEY>` with body `{token, returnSecureToken: true}`. The response includes `idToken` (suitable as Bearer for fuzex-api endpoints), `refreshToken`, and `expiresIn: 3600`.
+- The Web API Key is found at Firebase Console → Project Settings → General → Your apps → Web app → `apiKey`. It is not a secret (publicly used in Firebase Web SDK); auth is enforced via security rules and token verification, not the API key. x1
+- Pattern is useful for: (1) integration testing on the VPS, (2) seeding new users via the real `/v1/atproto/createAccount` endpoint instead of bypassing it with raw SQL + `pdsadmin`, (3) reproducing mobile-side auth bugs in isolation. x1
+
 
 ## Coverage tracker
 
@@ -139,6 +156,8 @@ Threshold remains 70% on all metrics.
 - Caddy's TLS policy matching uses the policies array in order. When an explicit hostname (e.g. `api.dev.fuzex.app`) ALSO falls under a wildcard (e.g. `*.dev.fuzex.app`) and the wildcard's policy comes first with `on_demand: true`, the wildcard wins — Caddy never tries the more-specific policy. Reordering Caddyfile site blocks does NOT change this because the Caddyfile-to-JSON adapter groups all on-demand subjects into a single policy regardless of declaration order.
 
 - The fix: put the API on a hostname that is NOT lexically under the wildcard. Sibling subdomains (`dev-api.fuzex.app` instead of `api.dev.fuzex.app`) avoid the collision entirely.
+
+- **Combined-block requirement (2026-05-06)**: even after migrating to sibling subdomains, a NEW collision surfaced. When a managed-cert sibling block (e.g. `pds.dev.fuzex.social`) AND a wildcard block (`*.dev.fuzex.social`) BOTH match the same hostname, Caddy's policy resolver silently breaks proactive cert obtain. The handshake then falls through to on-demand and fails because no cert was acquired. The fix: combine the PDS hostname INTO the wildcard block (single block, multiple subjects: `pds.dev.fuzex.social, *.dev.fuzex.social`). PDS's `/tls-check` returns 200 for its own hostname AND for registered handles, so on-demand cert acquisition works for both. Reserve eager managed-cert blocks for siblings that do NOT overlap the wildcard (e.g. `dev-api.fuzex.social`). x1
 
 ## fuzex-api architecture
 

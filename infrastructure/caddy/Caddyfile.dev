@@ -5,6 +5,15 @@
 # stays reserved for the marketing site and main app; everything atproto/
 # social-related lives under fuzex.social.
 #
+# IMPORTANT: pds.dev.fuzex.social is intentionally combined with the
+# *.dev.fuzex.social wildcard block (matching Bluesky's bsky.social reference
+# pattern). When a managed-cert sibling block AND a wildcard block both match
+# the same hostname, Caddy's policy resolution silently breaks proactive cert
+# obtain — TLS handshakes then fall through to on-demand and fail because the
+# cert was never acquired. Combining them into one on-demand-TLS block gated
+# by PDS /tls-check (which approves both PDS itself and registered handles)
+# is the only pattern that works reliably.
+#
 # Last updated: 2026-05-06
 
 {
@@ -14,14 +23,7 @@
 	}
 }
 
-# Bluesky PDS — managed TLS (cert obtained at startup via HTTP-01).
-# `pds.dev.fuzex.social` is a sibling subdomain (not under the *.dev.fuzex.social
-# wildcard), so Caddy issues the cert directly without consulting /tls-check.
-pds.dev.fuzex.social {
-	reverse_proxy http://localhost:3000
-}
-
-# fuzex-api — sibling subdomain, managed Let's Encrypt cert.
+# fuzex-api — eager managed Let's Encrypt cert (sibling, not under wildcard).
 dev-api.fuzex.social {
 	reverse_proxy http://localhost:3001 {
 		header_up Host {host}
@@ -29,13 +31,20 @@ dev-api.fuzex.social {
 	}
 }
 
-# User handle subdomains (akram.dev.fuzex.social, etc.) — on-demand TLS
-# gated by PDS /tls-check (only registered handles get certs).
-*.dev.fuzex.social {
+# PDS hostname + user handle subdomains — on-demand TLS gated by /tls-check.
+# PDS approves its own hostname AND registered user handles via /tls-check.
+pds.dev.fuzex.social, *.dev.fuzex.social {
 	tls {
 		on_demand
 	}
 
+	# PDS itself reverse-proxies to the Bluesky PDS container.
+	@pds host pds.dev.fuzex.social
+	handle @pds {
+		reverse_proxy http://localhost:3000
+	}
+
+	# User handle subdomains only respond to /.well-known/atproto-did.
 	@wellknown path /.well-known/atproto-did
 	handle @wellknown {
 		reverse_proxy http://localhost:3001 {

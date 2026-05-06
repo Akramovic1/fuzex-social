@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 2026-05-06 — Domain migration follow-ups
+
+### Fixed
+- **Caddy TLS for PDS hostname**: `pds.dev.fuzex.social` and `*.dev.fuzex.social`
+  were initially configured as separate blocks. Caddy's policy resolver
+  silently broke proactive cert obtain when a managed-cert sibling block and
+  a wildcard block matched the same hostname, causing TLS handshakes to fall
+  through to on-demand and fail. Combined them into a single on-demand-TLS
+  block gated by PDS `/tls-check` (matching Bluesky's bsky.social reference
+  pattern). Now eager managed cert is reserved for `dev-api.fuzex.social`
+  only; the PDS hostname rides on the wildcard's on-demand cert acquisition.
+
+### Notes
+- VPS migration to `fuzex.social` completed end-to-end. All 5 endpoints
+  verified green: `/health`, `/v1/username/check`, `/v1/resolve/:handle`,
+  `/.well-known/atproto-did`, and `POST /v1/atproto/getSession`.
+- Dev test user: `t100.dev.fuzex.social` (DID `did:plc:4nohhpere4ka5gisniie6nxh`).
+- `infrastructure/caddy/Caddyfile.dev` updated to the working pattern. Old
+  versions are preserved on the VPS as
+  `/pds/caddy/etc/caddy/Caddyfile.before-bsky-pattern-*`.
+- Discovered and fixed a placeholder string left in `/opt/fuzex-social/api/.env`
+  (`PDS_ADMIN_PASSWORD=PASTE_FROM_PDS_ADMIN_PWD_VARIABLE_HERE`) that was
+  blocking `createAccount` calls with PDS 401. Now correctly synced from
+  `/pds/pds.env`.
+
+
 ### Changed
 - (Domain migration) All fuzex-api and PDS hostnames moved from `fuzex.app`
   to `fuzex.social`. fuzex-api now lives at `dev-api.fuzex.social` (dev),
