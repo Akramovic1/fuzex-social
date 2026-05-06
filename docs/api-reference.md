@@ -1,6 +1,6 @@
 # API Reference
 
-Phase 1 endpoints. All endpoints are under `https://api.dev.fuzex.app` unless noted.
+Phase 1 endpoints. All endpoints are under `https://dev-api.fuzex.app` unless noted.
 
 ## GET /health
 
@@ -10,7 +10,7 @@ Liveness check with database ping.
 **Response:** `application/json`
 
 ```bash
-curl https://api.dev.fuzex.app/health
+curl https://dev-api.fuzex.app/health
 ```
 
 ```json
@@ -69,7 +69,7 @@ Public tipping resolver. Given a handle, returns the wallet address to tip.
 **Response:** `application/json`
 
 ```bash
-curl https://api.dev.fuzex.app/v1/resolve/akram.dev.fuzex.app
+curl https://dev-api.fuzex.app/v1/resolve/akram.dev.fuzex.app
 ```
 
 ```json

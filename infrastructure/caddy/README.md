@@ -7,7 +7,7 @@ the Bluesky PDS and fuzex-api.
 
 | File | Purpose |
 |---|---|
-| `Caddyfile.dev` | Caddy config for the dev VPS (`pds.dev.fuzex.app`, `api.dev.fuzex.app`, `*.dev.fuzex.app`) |
+| `Caddyfile.dev` | Caddy config for the dev VPS (`pds.dev.fuzex.app`, `dev-api.fuzex.app`, `*.dev.fuzex.app`) |
 
 ## How Caddy is wired on the VPS
 
@@ -33,7 +33,7 @@ The Caddyfile defines three site blocks plus a global block:
    issuance for any domain the PDS knows about.
 2. **PDS** (`pds.dev.fuzex.app`, `*.pds.dev.fuzex.app`): reverse-proxies to
    port 3000 (the PDS).
-3. **fuzex-api** (`api.dev.fuzex.app`): reverse-proxies to port 3001 (fuzex-api).
+3. **fuzex-api** (`dev-api.fuzex.app`): reverse-proxies to port 3001 (fuzex-api).
    Used for `/health`, `/v1/resolve/:handle`, and future endpoints. We set
    `Host`, `X-Real-IP`, `X-Forwarded-*` headers so fuzex-api can inspect the
    real client.
@@ -60,7 +60,7 @@ ssh root@<vps-ip> "docker exec caddy caddy validate --config /etc/caddy/Caddyfil
 ssh root@<vps-ip> "docker exec caddy caddy reload --config /etc/caddy/Caddyfile"
 
 # 5. Smoke test from your local machine
-curl https://api.dev.fuzex.app/health
+curl https://dev-api.fuzex.app/health
 curl -H "Host: akram.dev.fuzex.app" https://akram.dev.fuzex.app/.well-known/atproto-did
 ```
 

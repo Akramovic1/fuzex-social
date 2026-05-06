@@ -82,6 +82,26 @@ Phase 1 final coverage: 90.37% statements / 77.33% branches / 89.79% functions /
 
 Threshold remains 70% on all metrics.
 
+## Build / Deployment
+
+- TypeScript's `@/` path alias is NOT rewritten by `tsc` in compiled output. The build script must run `tsc-alias -p tsconfig.build.json` after `tsc -p tsconfig.build.json` so that compiled `dist/*.js` files have their `@/...` imports replaced with proper relative paths. tsx (dev) and Jest (tests) handle this differently — they rewrite at runtime.
+
+## Caddy + Bluesky PDS TLS interactions
+
+- PDS `/tls-check` only approves cert issuance for hostnames that match a registered handle on the PDS. Hostnames outside the configured `PDS_SERVICE_HANDLE_DOMAINS` get `InvalidRequest: handles are not provided on this domain`. Bare hostnames (the PDS's own service hostname) are NOT specially approved by `/tls-check` — Caddy must obtain that cert via the normal HTTP-01 challenge at startup, not via on-demand.
+
+- Caddy's TLS policy matching uses the policies array in order. When an explicit hostname (e.g. `api.dev.fuzex.app`) ALSO falls under a wildcard (e.g. `*.dev.fuzex.app`) and the wildcard's policy comes first with `on_demand: true`, the wildcard wins — Caddy never tries the more-specific policy. Reordering Caddyfile site blocks does NOT change this because the Caddyfile-to-JSON adapter groups all on-demand subjects into a single policy regardless of declaration order.
+
+- The fix: put the API on a hostname that is NOT lexically under the wildcard. Sibling subdomains (`dev-api.fuzex.app` instead of `api.dev.fuzex.app`) avoid the collision entirely.
+
+## fuzex-api architecture
+
+- The `users` table maps `firebase_uid` ↔ atproto identity (`did`, `handle`) ↔ wallet address. Firebase Auth holds the user identity; the embedded wallet system holds private keys in Secret Manager; fuzex-api Postgres holds only the public mappings. Wallet addresses are never private; private keys NEVER touch the VPS.
+
+- Firestore is the source of truth for user-input profile data (displayName, dateOfBirth, sex, walletAddress). fuzex-api reads it from Firestore at signup time and copies relevant fields into Postgres for atproto-related queries. There's intentional duplication between Firestore and Postgres because they serve different access patterns (Firestore = real-time mobile reads, Postgres = atproto handle resolution from Caddy/Bluesky).
+
+- For phone-only signups (no email in Firebase token), fuzex-api synthesizes a placeholder email of the form `phone-{e164-digits-only}@email.fuzex.app` to satisfy PDS's `createAccount` email requirement. The user never sees this email; PDS uses our auto-generated password (not user-facing) for any internal needs.
+
 ## Known Limitations
 
 - **lint-staged scope**: The pre-commit hook runs `cd api && npx lint-staged`, which scopes file matching to the api/ package. Root-level files (CHANGELOG.md, README.md, root configs) are not formatted by lint-staged on commit. Source code in api/ is fully linted as expected. Tracked for future resolution — likely requires either a root package.json with workspaces or duplicating lint-staged config at the root.

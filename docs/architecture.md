@@ -55,7 +55,7 @@ social-layer data lives in the VPS Postgres.
 - Auto-issues SSL via Let's Encrypt with on-demand TLS
 - Routes by hostname:
   - `pds.dev.fuzex.app`, `*.pds.dev.fuzex.app` → PDS (port 3000)
-  - `api.dev.fuzex.app` → fuzex-api (port 3001)
+  - `dev-api.fuzex.app` → fuzex-api (port 3001)
   - `*.dev.fuzex.app/.well-known/atproto-did` → fuzex-api
   - everything else under `*.dev.fuzex.app` → 404
 
@@ -115,7 +115,7 @@ Handle valid ✅
 ```
 FuzeX mobile app: user taps "Tip @sara.fuzex.app"
   ↓
-App calls https://api.dev.fuzex.app/v1/resolve/sara.fuzex.app
+App calls https://dev-api.fuzex.app/v1/resolve/sara.fuzex.app
   ↓
 fuzex-api resolveHandle route
   - parses handle, validates, checks reserved

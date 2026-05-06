@@ -54,10 +54,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - README.md "Getting started" table linking to all major docs by audience
 - docs/README.md doc index
 
+### Fixed
+- (Phase 1 deployment) `tsc-alias` post-build step rewrites `@/` path aliases in compiled JavaScript. Without it, `node dist/index.js` errors with `ERR_MODULE_NOT_FOUND: Cannot find package '@/shared'` because `tsc` itself does not rewrite paths.
+- (Phase 1 deployment) fuzex-api moved from `api.dev.fuzex.app` to `dev-api.fuzex.app` to avoid Caddy TLS policy collision with the `*.dev.fuzex.app` wildcard on-demand policy. Sibling subdomain pattern allows Caddy to manage the cert directly via Let's Encrypt without PDS `/tls-check` involvement.
+
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`
 - Removed Husky v8 deprecation idiom from hooks (clean v9 layout)
 - Jest coverage exclusions tightened: `app.ts` and `middleware/**` (except errorHandler) are now measured
+- `infrastructure/caddy/Caddyfile.dev` no longer routes `api.dev.fuzex.app`. New routing: `dev-api.fuzex.app` for the API (managed TLS), `pds.dev.fuzex.app` for the PDS (on-demand TLS), `*.dev.fuzex.app` for user handles only.
+- All documentation references updated from `api.dev.fuzex.app` → `dev-api.fuzex.app`.
 
 ## [0.1.0] — Phase 1 Complete
 

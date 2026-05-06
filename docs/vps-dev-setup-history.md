@@ -349,6 +349,126 @@ Following [deployment.md](./deployment.md), the next step is to:
 After that, fuzex-api takes over handle resolution and the temporary hardcode
 is gone.
 
+## Step 9 — fuzex-api deployment (the journey)
+
+After all the prerequisites were in place, deploying fuzex-api hit two notable
+issues that took significant debugging. Both are now baked into the codebase
+fixes and the Caddy config in this repo, but the journey is worth recording.
+
+### Issue 1: TypeScript path aliases not resolved in production build
+
+The first `bash scripts/deploy.sh` got 95% of the way through (npm ci ✅,
+build ✅, migrations ✅, pm2 started ✅) and then the smoke test failed.
+pm2 logs showed:
+
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package '@/shared' imported from /opt/fuzex-social/api/dist/index.js
+```
+
+**Why it happened:** TypeScript's `@/*` path alias works at compile time for
+type-checking, but `tsc` does NOT rewrite the import paths in the emitted
+JavaScript. So `dist/index.js` still contained `import ... from '@/shared/...'`.
+Node ESM at runtime had no idea what `@/` meant.
+
+This worked locally because:
+
+- `tsx` (dev runner) handles path aliases at runtime
+- Jest's `moduleNameMapper` rewrites them in tests
+
+But production runs raw Node on compiled output, which has neither.
+
+**The fix:** added `tsc-alias` as a dev dependency. Build script became:
+
+```
+tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json
+```
+
+`tsc-alias` post-processes the compiled `dist/` directory and replaces all
+`@/...` imports with proper relative paths. Verified with:
+
+```
+grep -r "from '@/" dist/ || echo "no @/ imports remaining"
+```
+
+Committed as `c828abc`. Second deploy succeeded.
+
+### Issue 2: TLS handshake failure on api.dev.fuzex.app
+
+After fuzex-api was running locally on the VPS (verified via
+`curl http://localhost:3001/health`), the next step was to expose it via
+Caddy at `api.dev.fuzex.app`. But every external HTTPS request failed:
+
+```
+curl: (35) TLS connect error: error:0A000438:SSL routines::tlsv1 alert internal error
+```
+
+Caddy never even attempted to obtain a cert (`find /data -name 'api.dev.fuzex.app*'`
+returned nothing). The handshake was being rejected before any cert acquisition.
+
+**Why it happened:** Caddy's TLS automation uses per-policy on-demand TLS.
+Our Caddyfile had:
+
+- Block 1: `pds.dev.fuzex.app, *.pds.dev.fuzex.app` with `tls { on_demand }`
+- Block 2: `api.dev.fuzex.app` (intended to use a normal Let's Encrypt cert)
+- Block 3: `*.dev.fuzex.app` with `tls { on_demand }` (for user handle subdomains)
+
+The Caddyfile-to-JSON adapter merged all `on_demand` blocks into a single
+TLS policy. When a request arrived for `api.dev.fuzex.app`, Caddy walked the
+policies array in order. The first policy matched (the wildcard `*.dev.fuzex.app`
+includes `api.dev.fuzex.app` lexically), and that policy had `on_demand: true`.
+Caddy then asked PDS at `/tls-check?domain=api.dev.fuzex.app`, which returned:
+
+```json
+{"error":"InvalidRequest","message":"handles are not provided on this domain"}
+```
+
+PDS only approves cert issuance for actual registered handle subdomains.
+`api.dev.fuzex.app` isn't a handle. Caddy aborted the handshake.
+
+Reordering the Caddyfile blocks didn't help because the JSON adapter groups
+all on-demand subjects into one policy regardless of declaration order.
+Forcing issuance via the admin API broke the entire Caddy config (had to
+restore from backup).
+
+Briefly attempted PDS migration: changed `PDS_HOSTNAME=dev-pds.fuzex.app`
+hoping to also move the API to `dev-api.fuzex.app` for symmetry. Discovered
+that PDS `/tls-check` rejects its OWN hostname too:
+
+```bash
+curl http://localhost:3000/tls-check?domain=dev-pds.fuzex.app
+{"error":"InvalidRequest","message":"handles are not provided on this domain"}
+```
+
+This means the original PDS at `pds.dev.fuzex.app` worked because Caddy
+obtained that cert at PDS install time via the standard ACME HTTP-01 challenge,
+NOT via on-demand. The fact that `pds.dev.fuzex.app` was lexically under the
+wildcard didn't matter for the INITIAL acquisition — it was already in the
+cert cache by the time the wildcard policy started matching things.
+
+So we reverted `PDS_HOSTNAME` to `pds.dev.fuzex.app` (federation cache and
+akram's PLC document point there).
+
+**The fix:** moved fuzex-api to `dev-api.fuzex.app` — a SIBLING subdomain that
+is NOT lexically under `*.dev.fuzex.app`. Now Caddy has three clean TLS
+situations:
+
+- `dev-api.fuzex.app` → managed cert at startup (no on-demand, no PDS check)
+- `pds.dev.fuzex.app` → original cert (cached, refreshed normally)
+- `*.dev.fuzex.app` → on-demand TLS gated by PDS `/tls-check` (only registered handles)
+
+Final Caddyfile committed as `dea2e2e`. End-to-end verification passed.
+
+### Lessons baked into the repo
+
+- `infrastructure/caddy/Caddyfile.dev` is the canonical config; do not edit
+  the Caddyfile on the VPS in place — change the file in this repo, commit,
+  pull, copy, reload.
+- The `dev-api.fuzex.app` hostname is intentional. Do NOT try to rename it
+  to `api.dev.fuzex.app` — you'll re-trigger the wildcard collision.
+- For production, the same lesson applies: API hostname should NOT be a
+  subdomain of any wildcard zone. Use `api.fuzex.app` (sibling of any
+  `*.<region>.fuzex.app` wildcards) not `api.<region>.fuzex.app`.
+
 ## Credentials saved to password manager
 
 For a clean record, here's everything from this setup that lives in our

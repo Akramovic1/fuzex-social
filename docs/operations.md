@@ -59,7 +59,7 @@ pm2 delete fuzex-api
 curl http://localhost:3001/health
 
 # Public (from anywhere)
-curl https://api.dev.fuzex.app/health
+curl https://dev-api.fuzex.app/health
 ```
 
 A healthy response:

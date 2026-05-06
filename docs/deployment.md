@@ -8,7 +8,7 @@ How to deploy fuzex-api to the dev VPS.
 - Bluesky PDS already installed and running (Caddy on ports 80/443, PDS on 3000)
 - DNS configured at Cloudflare:
   - `pds.dev.fuzex.app` → VPS IP (DNS-only, gray cloud)
-  - `api.dev.fuzex.app` → VPS IP (DNS-only, gray cloud)
+  - `dev-api.fuzex.app` → VPS IP (DNS-only, gray cloud)
   - `*.dev.fuzex.app` → VPS IP (DNS-only, gray cloud)
 
 ## First-time setup (one-time per VPS)
@@ -135,10 +135,10 @@ sudo -u postgres psql -d fuzex_social -f /opt/fuzex-social/scripts/seed-akram.sq
 # From your local machine:
 
 # Health
-curl https://api.dev.fuzex.app/health
+curl https://dev-api.fuzex.app/health
 
 # Resolve
-curl https://api.dev.fuzex.app/v1/resolve/akram.dev.fuzex.app
+curl https://dev-api.fuzex.app/v1/resolve/akram.dev.fuzex.app
 
 # Well-known (should return DID with no trailing newline)
 curl -i https://akram.dev.fuzex.app/.well-known/atproto-did
