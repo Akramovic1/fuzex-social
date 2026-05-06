@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handle parser utility with full unit-test coverage
 - `eslint-import-resolver-typescript` dev dependency (required for `import/*` rules to resolve TypeScript paths)
 - `tsconfig.test.json` — test-only tsconfig with `module: CommonJS` so ts-jest produces Jest-compatible output
+- Database layer: Drizzle schema (users, audit_logs, invite_codes), pooled pg client, hand-written initial migration
+- Migration runner (CLI + library) with shared core for tests
+- UsersRepository with full integration test coverage (5 query methods, 8 cases)
+- Database health check helper (`pingDatabase`) with integration test
+- Test DB harness: auto-creates `fuzex_social_test`, runs migrations in jest globalSetup
+- Graceful shutdown now closes the DB pool
 
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`

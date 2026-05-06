@@ -27,6 +27,31 @@ multiple times, append `xN` instead of duplicating.
 - Errors thrown from route handlers must extend `AppError` from `@/shared/errors/index.js` — anything else becomes a 500 with no detail leaked to the client
 - Hono middleware order matters: correlationId → CORS → requestLogger → rateLimit → routes
 
+## Database layer
+
+- Migrations are HAND-WRITTEN in `api/src/shared/db/migrations/*.sql`. We do not use `drizzle-kit generate`. The journal at `migrations/meta/_journal.json` tracks applied migrations
+- Drizzle's migrator splits SQL files on the literal token `--> statement-breakpoint`. Statements without it run as a single block — usually fine, but explicit breakpoints make failures easier to diagnose
+- The `audit_logs.user_id` foreign key is declared in SQL only, not in the Drizzle `pgTable` definition. The `relations()` helper for query-builder convenience is separate from the FK constraint
+- Tests use a SEPARATE database `fuzex_social_test` on the same Postgres instance. Jest's `globalSetup` auto-creates it if missing (requires the dev DB user to have `CREATEDB`)
+- Repositories take `Database` via constructor — they don't import the singleton — so tests can pass a test DB
+- Jest `globalSetup` is loaded by Node's plain CJS loader, NOT by Jest's runtime. That loader bypasses both `moduleNameMapper` and the `.js → no-extension` rewrite. The setup file therefore imports only from `node_modules` (drizzle, pg) and inlines the migration runner — anything from `src/` would crash
+- The Postgres container in dev was bootstrapped with `POSTGRES_USER=fuzex_api_dev`, making that user the bootstrap superuser (no `postgres` role exists). Use `-U fuzex_api_dev` for admin tasks like `ALTER USER ... CREATEDB`
+
+## Coverage tracker
+
+Coverage exclusions added in Prompt 3 (must be re-included as their test coverage lands):
+
+- `src/app.ts`                  — re-include in Prompt 4 (HTTP tests via supertest)
+- `src/index.ts`                — keep excluded (bootstrap, hard to unit-test)
+- `src/shared/middleware/**`    — re-include in Prompt 4 (tests exercise via app)
+- `src/shared/errors/**`        — re-include in Prompt 4 (error handler tests)
+- `src/shared/config/**`        — re-include in Prompt 5 (route-level integration)
+- `src/shared/logger/**`        — keep excluded (logger config, side-effect heavy)
+- `src/shared/db/index.ts`      — keep excluded (singleton, tested via integration)
+- `src/shared/db/migrationRunner.ts` — re-include if pure logic gains tests
+
+When re-including, expect coverage to drop initially, then rise as new tests land. Threshold stays at 70%.
+
 ## Known Limitations
 
 - **lint-staged scope**: The pre-commit hook runs `cd api && npx lint-staged`, which scopes file matching to the api/ package. Root-level files (CHANGELOG.md, README.md, root configs) are not formatted by lint-staged on commit. Source code in api/ is fully linted as expected. Tracked for future resolution — likely requires either a root package.json with workspaces or duplicating lint-staged config at the root.

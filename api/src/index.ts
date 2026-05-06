@@ -1,6 +1,7 @@
 import { serve, type ServerType } from '@hono/node-server';
 
 import { config } from '@/shared/config/index.js';
+import { closeDb } from '@/shared/db/index.js';
 import { logger } from '@/shared/logger/index.js';
 
 import { buildApp } from './app.js';
@@ -44,8 +45,14 @@ function attachShutdownHandlers(server: ServerType): void {
         logger.error({ err }, 'error during shutdown');
         process.exit(1);
       }
-      logger.info('graceful shutdown complete');
-      process.exit(0);
+      void closeDb()
+        .catch((closeErr: unknown) => {
+          logger.error({ err: closeErr }, 'error closing db pool');
+        })
+        .finally(() => {
+          logger.info('graceful shutdown complete');
+          process.exit(0);
+        });
     });
   };
 

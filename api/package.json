@@ -22,6 +22,8 @@
     "test:coverage": "jest --coverage --passWithNoTests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/shared/db/migrate.ts",
+    "db:migrate:test": "DATABASE_URL=postgresql://fuzex_api_dev:devpassword@localhost:5433/fuzex_social_test tsx src/shared/db/migrate.ts",
+    "db:reset:test": "docker exec fuzex-postgres-dev psql -U fuzex_api_dev -d fuzex_social_test -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;' && npm run db:migrate:test",
     "db:studio": "drizzle-kit studio",
     "prepare": "cd .. && husky"
   },

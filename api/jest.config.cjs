@@ -7,6 +7,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts', '**/?(*.)+(test).ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
+    '^@/(.*)\\.js$': '<rootDir>/src/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
@@ -19,12 +20,24 @@ module.exports = {
       },
     ],
   },
+  globalSetup: '<rootDir>/src/shared/testing/jestSetup.ts',
+  testTimeout: 15000,
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.test.ts',
     '!src/**/__tests__/**',
+    '!src/**/*.d.ts',
+    '!src/**/index.ts',
+    '!src/index.ts',
+    '!src/app.ts',
+    '!src/shared/config/**',
+    '!src/shared/logger/**',
+    '!src/shared/middleware/**',
+    '!src/shared/errors/**',
     '!src/shared/db/migrate.ts',
     '!src/shared/db/migrations/**',
+    '!src/shared/db/migrationRunner.ts',
+    '!src/shared/testing/**',
   ],
   coverageThreshold: {
     global: {
