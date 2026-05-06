@@ -7,7 +7,7 @@ the Bluesky PDS and fuzex-api.
 
 | File | Purpose |
 |---|---|
-| `Caddyfile.dev` | Caddy config for the dev VPS (`pds.dev.fuzex.app`, `dev-api.fuzex.app`, `*.dev.fuzex.app`) |
+| `Caddyfile.dev` | Caddy config for the dev VPS (`pds.dev.fuzex.social`, `dev-api.fuzex.social`, `*.dev.fuzex.social`) |
 
 ## How Caddy is wired on the VPS
 
@@ -31,14 +31,14 @@ The Caddyfile defines three site blocks plus a global block:
 1. **Global**: sets the email for Let's Encrypt and the `on_demand_tls` ask hook.
    The `ask` endpoint is the PDS's `/tls-check` route, which approves cert
    issuance for any domain the PDS knows about.
-2. **PDS** (`pds.dev.fuzex.app`, `*.pds.dev.fuzex.app`): reverse-proxies to
+2. **PDS** (`pds.dev.fuzex.social`, `*.pds.dev.fuzex.social`): reverse-proxies to
    port 3000 (the PDS).
-3. **fuzex-api** (`dev-api.fuzex.app`): reverse-proxies to port 3001 (fuzex-api).
+3. **fuzex-api** (`dev-api.fuzex.social`): reverse-proxies to port 3001 (fuzex-api).
    Used for `/health`, `/v1/resolve/:handle`, and future endpoints. We set
    `Host`, `X-Real-IP`, `X-Forwarded-*` headers so fuzex-api can inspect the
    real client.
-4. **Handle subdomains** (`*.dev.fuzex.app`): match any user handle subdomain
-   like `akram.dev.fuzex.app`. Routes only `/.well-known/atproto-did` to
+4. **Handle subdomains** (`*.dev.fuzex.social`): match any user handle subdomain
+   like `akram.dev.fuzex.social`. Routes only `/.well-known/atproto-did` to
    fuzex-api (which looks up the user by Host header). All other paths return
    404 — handle subdomains are NOT a general API surface.
 
@@ -60,8 +60,8 @@ ssh root@<vps-ip> "docker exec caddy caddy validate --config /etc/caddy/Caddyfil
 ssh root@<vps-ip> "docker exec caddy caddy reload --config /etc/caddy/Caddyfile"
 
 # 5. Smoke test from your local machine
-curl https://dev-api.fuzex.app/health
-curl -H "Host: akram.dev.fuzex.app" https://akram.dev.fuzex.app/.well-known/atproto-did
+curl https://dev-api.fuzex.social/health
+curl -H "Host: akram.dev.fuzex.social" https://akram.dev.fuzex.social/.well-known/atproto-did
 ```
 
 ## Rolling back

@@ -2,14 +2,21 @@
 
 How to deploy fuzex-api to the dev VPS.
 
+> **Migration from `fuzex.app`:** As of 2026-05, all social/atproto hostnames
+> moved from `fuzex.app` to `fuzex.social` (see [ADR 0007](./decisions/0007-migrate-to-fuzex-social-domain.md)).
+> The dev API now lives at `dev-api.fuzex.social`; the PDS at
+> `pds.dev.fuzex.social`; user handles at `username.dev.fuzex.social`. For
+> the VPS-side migration steps, see
+> [`migration-fuzex-app-to-social.md`](./migration-fuzex-app-to-social.md).
+
 ## Prerequisites
 
 - A Hetzner VPS running Ubuntu 24.04 (or any Debian-based distro)
 - Bluesky PDS already installed and running (Caddy on ports 80/443, PDS on 3000)
 - DNS configured at Cloudflare:
-  - `pds.dev.fuzex.app` → VPS IP (DNS-only, gray cloud)
-  - `dev-api.fuzex.app` → VPS IP (DNS-only, gray cloud)
-  - `*.dev.fuzex.app` → VPS IP (DNS-only, gray cloud)
+  - `pds.dev.fuzex.social` → VPS IP (DNS-only, gray cloud)
+  - `dev-api.fuzex.social` → VPS IP (DNS-only, gray cloud)
+  - `*.dev.fuzex.social` → VPS IP (DNS-only, gray cloud)
 
 ## First-time setup (one-time per VPS)
 
@@ -76,8 +83,8 @@ NODE_ENV=production
 PORT=3001
 LOG_LEVEL=info
 DATABASE_URL=postgresql://fuzex_api:THE_PASSWORD@localhost:5432/fuzex_social
-HANDLE_DOMAIN=.dev.fuzex.app
-PDS_URL=https://pds.dev.fuzex.app
+HANDLE_DOMAIN=.dev.fuzex.social
+PDS_URL=https://pds.dev.fuzex.social
 CORS_ALLOWED_ORIGINS=https://app.fuzex.app
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX_REQUESTS=100
@@ -98,7 +105,7 @@ This runs `npm ci`, builds, migrates, starts under pm2, and smoke-tests
 
 ### 8. Update Caddy
 
-The current Caddyfile has a temporary hardcoded block for `akram.dev.fuzex.app`
+The current Caddyfile has a temporary hardcoded block for `akram.dev.fuzex.social`
 that we now replace with proper routing.
 
 ```bash
@@ -135,16 +142,16 @@ sudo -u postgres psql -d fuzex_social -f /opt/fuzex-social/scripts/seed-akram.sq
 # From your local machine:
 
 # Health
-curl https://dev-api.fuzex.app/health
+curl https://dev-api.fuzex.social/health
 
 # Resolve
-curl https://dev-api.fuzex.app/v1/resolve/akram.dev.fuzex.app
+curl https://dev-api.fuzex.social/v1/resolve/akram.dev.fuzex.social
 
 # Well-known (should return DID with no trailing newline)
-curl -i https://akram.dev.fuzex.app/.well-known/atproto-did
+curl -i https://akram.dev.fuzex.social/.well-known/atproto-did
 
 # Bluesky AppView (cached — may take time)
-curl "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=akram.dev.fuzex.app"
+curl "https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=akram.dev.fuzex.social"
 ```
 
 If all four return expected results, deployment is successful.
@@ -217,7 +224,7 @@ PDS_ADMIN_PASSWORD=<from password manager: "Dev PDS — Admin Password">
 PDS_INVITE_REQUIRED=true
 
 DEFAULT_WALLET_CHAIN=ethereum
-SYNTHETIC_EMAIL_DOMAIN=email.fuzex.app
+SYNTHETIC_EMAIL_DOMAIN=email.fuzex.social
 MIN_USER_AGE=13
 
 # Generate a strong key:
@@ -254,7 +261,7 @@ From your local machine, with a valid Firebase ID token from the Flutter
 app pointed at the dev project:
 
 ```bash
-curl -i -X POST https://dev-api.fuzex.app/v1/atproto/createAccount \
+curl -i -X POST https://dev-api.fuzex.social/v1/atproto/createAccount \
   -H "Authorization: Bearer <firebase-id-token>"
 ```
 

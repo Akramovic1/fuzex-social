@@ -28,7 +28,7 @@ export const envSchema = z.object({
 
   HANDLE_DOMAIN: z
     .string()
-    .startsWith('.', 'HANDLE_DOMAIN must start with a dot (e.g., ".dev.fuzex.app")'),
+    .startsWith('.', 'HANDLE_DOMAIN must start with a dot (e.g., ".dev.fuzex.social")'),
   PDS_URL: z.string().url('PDS_URL must be a valid URL'),
 
   CORS_ALLOWED_ORIGINS: csvSchema.default(''),
@@ -52,7 +52,7 @@ export const envSchema = z.object({
 
   // Phase 2: user defaults
   DEFAULT_WALLET_CHAIN: z.string().default('ethereum'),
-  SYNTHETIC_EMAIL_DOMAIN: z.string().default('email.fuzex.app'),
+  SYNTHETIC_EMAIL_DOMAIN: z.string().default('email.fuzex.social'),
   MIN_USER_AGE: z.coerce.number().int().min(0).default(13),
 
   // Phase 2: encrypts per-user PDS passwords stored in Postgres.

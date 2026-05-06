@@ -154,10 +154,10 @@ docker exec -i fuzex-postgres-dev psql -U fuzex_api_dev -d fuzex_social_dev \
 Then:
 
 ```bash
-curl -H "Host: akram.dev.fuzex.app" http://localhost:3001/.well-known/atproto-did
+curl -H "Host: akram.dev.fuzex.social" http://localhost:3001/.well-known/atproto-did
 # did:plc:cwbqnunxsu7isx4vv4zul4un
 
-curl http://localhost:3001/v1/resolve/akram.dev.fuzex.app | jq .
+curl http://localhost:3001/v1/resolve/akram.dev.fuzex.social | jq .
 # Full JSON summary
 ```
 

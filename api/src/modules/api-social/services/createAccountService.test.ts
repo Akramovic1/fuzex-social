@@ -10,7 +10,7 @@ import { type PdsAdminClient } from '../lib/pdsAdminClient.js';
 import { CreateAccountService } from './createAccountService.js';
 import { type FirestoreUserService, type FirestoreUser } from './firestoreUserService.js';
 
-const HANDLE_DOMAIN = '.dev.fuzex.app';
+const HANDLE_DOMAIN = '.dev.fuzex.social';
 
 const VALID_FIRESTORE_USER: FirestoreUser = {
   walletAddress: '0x0000000000000000000000000000000000000001',
@@ -48,7 +48,7 @@ function buildMockPdsClient(overrides: Partial<PdsClientMocks> = {}): MockPdsCli
       overrides.createAccount ??
       jest.fn(async () => ({
         did: 'did:plc:test1',
-        handle: 'akram.dev.fuzex.app',
+        handle: 'akram.dev.fuzex.social',
         accessJwt: 'access-jwt',
         refreshJwt: 'refresh-jwt',
       })),
@@ -96,13 +96,13 @@ describe('CreateAccountService', () => {
     const result = await svc.execute({ firebaseAuth: VALID_AUTH, correlationId: 'corr-1' });
 
     expect(result.did).toBe('did:plc:test1');
-    expect(result.handle).toBe('akram.dev.fuzex.app');
+    expect(result.handle).toBe('akram.dev.fuzex.social');
     expect(result.displayName).toBe('Akram');
 
     expect(pds.createAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         email: 'akram@example.com',
-        handle: 'akram.dev.fuzex.app',
+        handle: 'akram.dev.fuzex.social',
       }),
     );
     expect(pds.putProfile).toHaveBeenCalled();
@@ -119,7 +119,7 @@ describe('CreateAccountService', () => {
     await usersRepo.insert({
       firebaseUid: VALID_AUTH.uid,
       username: 'existing',
-      handle: 'existing.dev.fuzex.app',
+      handle: 'existing.dev.fuzex.social',
       did: 'did:plc:existing',
       walletAddress: '0x0000000000000000000000000000000000000099',
       chain: 'ethereum',
@@ -159,7 +159,7 @@ describe('CreateAccountService', () => {
     await usersRepo.insert({
       firebaseUid: 'other-firebase-uid',
       username: 'akram',
-      handle: 'akram.dev.fuzex.app',
+      handle: 'akram.dev.fuzex.social',
       did: 'did:plc:other',
       walletAddress: '0x000000000000000000000000000000000000000a',
       chain: 'ethereum',
@@ -230,7 +230,7 @@ describe('CreateAccountService', () => {
     await svc.execute({ firebaseAuth: phoneAuth, correlationId: 'corr' });
 
     expect(pds.createAccount).toHaveBeenCalledWith(
-      expect.objectContaining({ email: 'phone-15551234567@email.fuzex.app' }),
+      expect.objectContaining({ email: 'phone-15551234567@email.fuzex.social' }),
     );
   });
 });

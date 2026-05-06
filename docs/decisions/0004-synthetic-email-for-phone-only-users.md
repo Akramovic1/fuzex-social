@@ -25,16 +25,16 @@ When the verified Firebase token has no email but has a phone number,
 fuzex-api derives an email of the form:
 
 ```
-phone-{e164-digits-only}@email.fuzex.app
+phone-{e164-digits-only}@email.fuzex.social
 ```
 
 For example, a token with `phone_number: "+1 (555) 123-4567"` becomes
-`phone-15551234567@email.fuzex.app`. The synthetic email is stored on the
+`phone-15551234567@email.fuzex.social`. The synthetic email is stored on the
 PDS account and ignored by the user (PDS does not send mail to it; emails
 go via Firebase Auth's built-in flows).
 
 The fallback for users with neither email nor phone (anonymous signup) is
-`uid-{firebase_uid}@email.fuzex.app`. This branch is unused today but kept
+`uid-{firebase_uid}@email.fuzex.social`. This branch is unused today but kept
 for completeness.
 
 ## Consequences
@@ -46,7 +46,7 @@ for completeness.
 - The synthetic-email pattern is visibly distinguishable, so any future
   "upgrade your account" flow can detect synthetic addresses and prompt for
   a real one (`isSyntheticEmail()` helper exists for this).
-- `email.fuzex.app` is already verified in Resend for outbound mail; it's a
+- `email.fuzex.social` is already verified in Resend for outbound mail; it's a
   trusted domain we already operate.
 
 ### Negative
@@ -57,7 +57,7 @@ for completeness.
   consciously route ALL transactional email through Firebase Auth, not PDS,
   so this is not a problem in practice.
 - A small risk of synthetic-vs-real ambiguity if a real user happens to own
-  `phone-15551234567@email.fuzex.app` — but `email.fuzex.app` is our
+  `phone-15551234567@email.fuzex.social` — but `email.fuzex.social` is our
   domain, so we control whether such a mailbox exists. We deliberately do
   not provision any real mailboxes there.
 

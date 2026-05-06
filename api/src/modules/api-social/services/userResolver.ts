@@ -40,7 +40,7 @@ export class UserResolver {
    *
    * Used by GET /.well-known/atproto-did.
    *
-   * @param hostHeader - The request Host header (e.g., "akram.dev.fuzex.app").
+   * @param hostHeader - The request Host header (e.g., "akram.dev.fuzex.social").
    * @returns The DID string.
    * @throws HandleResolutionError if the handle is malformed or no user matches.
    */
@@ -58,7 +58,7 @@ export class UserResolver {
    *
    * Used by GET /v1/resolve/:handle.
    *
-   * @param handle - The full handle (e.g., "akram.dev.fuzex.app").
+   * @param handle - The full handle (e.g., "akram.dev.fuzex.social").
    * @returns Resolved summary suitable for the public response.
    * @throws HandleResolutionError on malformed handle, missing user, or tipping disabled.
    */

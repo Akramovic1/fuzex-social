@@ -17,7 +17,7 @@ interface WellKnownRouteDeps {
  * - All other errors propagate to the global error handler
  *
  * The endpoint reads the Host header to determine which user is being looked
- * up. Caddy will route `*.dev.fuzex.app/.well-known/atproto-did` here,
+ * up. Caddy will route `*.dev.fuzex.social/.well-known/atproto-did` here,
  * preserving the original Host.
  *
  * @param deps - Injected dependencies.

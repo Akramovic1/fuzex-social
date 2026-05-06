@@ -56,7 +56,7 @@ When Caddy config changes (e.g., adding new routes), see `infrastructure/caddy/R
 
 ## seed-akram.sql
 
-For end-to-end manual verification — inserts a test row matching the existing `akram.dev.fuzex.app` PDS account. Run from the repo root:
+For end-to-end manual verification — inserts a test row matching the existing `akram.dev.fuzex.social` PDS account. Run from the repo root:
 
 ```bash
 # Local dev DB

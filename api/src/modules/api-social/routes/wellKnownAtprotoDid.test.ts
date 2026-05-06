@@ -8,7 +8,7 @@ import { truncateAll } from '@/shared/testing/testDb.js';
 const SEED_USER = {
   firebaseUid: 'firebase_test_user_1',
   username: 'akram',
-  handle: 'akram.dev.fuzex.app',
+  handle: 'akram.dev.fuzex.social',
   did: 'did:plc:cwbqnunxsu7isx4vv4zul4un',
   walletAddress: '0x0000000000000000000000000000000000000001',
 } as const;
@@ -39,7 +39,7 @@ describe('GET /.well-known/atproto-did', () => {
 
     const res = await request(harness.handler)
       .get('/.well-known/atproto-did')
-      .set('Host', 'akram.dev.fuzex.app');
+      .set('Host', 'akram.dev.fuzex.social');
 
     expect(res.status).toBe(200);
     expect(res.headers['content-type']).toMatch(/^text\/plain/);
@@ -51,7 +51,7 @@ describe('GET /.well-known/atproto-did', () => {
   it('returns 404 with empty body for unknown handles', async () => {
     const res = await request(harness.handler)
       .get('/.well-known/atproto-did')
-      .set('Host', 'unknown.dev.fuzex.app');
+      .set('Host', 'unknown.dev.fuzex.social');
 
     expect(res.status).toBe(404);
     expect(res.text).toBe('');
@@ -71,7 +71,7 @@ describe('GET /.well-known/atproto-did', () => {
 
     const res = await request(harness.handler)
       .get('/.well-known/atproto-did')
-      .set('Host', 'evil.akram.dev.fuzex.app');
+      .set('Host', 'evil.akram.dev.fuzex.social');
 
     expect(res.status).toBe(404);
     expect(res.text).toBe('');
@@ -80,7 +80,7 @@ describe('GET /.well-known/atproto-did', () => {
   it('returns 404 for reserved usernames even if somehow seeded', async () => {
     const res = await request(harness.handler)
       .get('/.well-known/atproto-did')
-      .set('Host', 'admin.dev.fuzex.app');
+      .set('Host', 'admin.dev.fuzex.social');
 
     expect(res.status).toBe(404);
     expect(res.text).toBe('');
@@ -91,7 +91,7 @@ describe('GET /.well-known/atproto-did', () => {
 
     const res = await request(harness.handler)
       .get('/.well-known/atproto-did')
-      .set('Host', 'akram.dev.fuzex.app');
+      .set('Host', 'akram.dev.fuzex.social');
 
     expect(res.headers['cache-control']).toBe('public, max-age=300');
   });

@@ -16,7 +16,7 @@ INSERT INTO users (
 VALUES (
   'firebase_uid_placeholder_for_akram',
   'akram',
-  'akram.dev.fuzex.app',
+  'akram.dev.fuzex.social',
   'did:plc:cwbqnunxsu7isx4vv4zul4un',
   '0x0000000000000000000000000000000000000001',
   'ethereum',

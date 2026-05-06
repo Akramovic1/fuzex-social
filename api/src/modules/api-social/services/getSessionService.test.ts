@@ -41,7 +41,7 @@ describe('GetSessionService', () => {
     await usersRepo.createWithProfile({
       firebaseUid: 'firebase-uid-1',
       username: 'akram',
-      handle: 'akram.dev.fuzex.app',
+      handle: 'akram.dev.fuzex.social',
       did: 'did:plc:test1',
       walletAddress: '0x0000000000000000000000000000000000000001',
       chain: 'ethereum',
@@ -63,7 +63,7 @@ describe('GetSessionService', () => {
 
     const result = await svc.execute({ firebaseUid: 'firebase-uid-1' });
     expect(result.did).toBe('did:plc:test1');
-    expect(result.handle).toBe('akram.dev.fuzex.app');
+    expect(result.handle).toBe('akram.dev.fuzex.social');
     expect(result.accessJwt).toBe('access-jwt');
   });
 
@@ -77,7 +77,7 @@ describe('GetSessionService', () => {
     await usersRepo.insert({
       firebaseUid: 'legacy-uid',
       username: 'legacy',
-      handle: 'legacy.dev.fuzex.app',
+      handle: 'legacy.dev.fuzex.social',
       did: 'did:plc:legacy',
       walletAddress: '0x000000000000000000000000000000000000abcd',
       chain: 'ethereum',
@@ -94,7 +94,7 @@ describe('GetSessionService', () => {
     await usersRepo.createWithProfile({
       firebaseUid: 'firebase-uid-2',
       username: 'sara',
-      handle: 'sara.dev.fuzex.app',
+      handle: 'sara.dev.fuzex.social',
       did: 'did:plc:sara',
       walletAddress: '0x000000000000000000000000000000000000fff1',
       chain: 'ethereum',

@@ -10,7 +10,7 @@ import { type FirebaseAuthContext } from '@/shared/middleware/firebaseAuth.js';
  *   3. Synthetic email derived from the Firebase UID (anonymous fallback)
  *
  * Synthetic emails satisfy PDS's email requirement without surfacing them to
- * the user. They live under SYNTHETIC_EMAIL_DOMAIN (default `email.fuzex.app`).
+ * the user. They live under SYNTHETIC_EMAIL_DOMAIN (default `email.fuzex.social`).
  *
  * @param authCtx - Verified Firebase auth context.
  * @returns The email PDS should associate with the account.

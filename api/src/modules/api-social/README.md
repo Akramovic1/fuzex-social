@@ -38,7 +38,7 @@ then composes the routes.
 ```ts
 const module = buildApiSocialModule({
   db: testDb,
-  handleDomain: '.dev.fuzex.app',
+  handleDomain: '.dev.fuzex.social',
 });
 ```
 

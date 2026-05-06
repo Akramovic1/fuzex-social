@@ -93,7 +93,7 @@ export class UsersRepository {
   /**
    * Finds a user by handle.
    *
-   * @param handle - The full handle (e.g., "akram.dev.fuzex.app").
+   * @param handle - The full handle (e.g., "akram.dev.fuzex.social").
    * @returns The user row if found; otherwise null.
    */
   public async findByHandle(handle: string): Promise<User | null> {

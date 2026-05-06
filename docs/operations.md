@@ -59,7 +59,7 @@ pm2 delete fuzex-api
 curl http://localhost:3001/health
 
 # Public (from anywhere)
-curl https://dev-api.fuzex.app/health
+curl https://dev-api.fuzex.social/health
 ```
 
 A healthy response:
@@ -124,9 +124,9 @@ SELECT action, count(*) FROM audit_logs WHERE created_at > NOW() - INTERVAL '24 
 
 ### Bluesky says "Invalid Handle"
 
-1. Curl the well-known directly: `curl -i https://akram.dev.fuzex.app/.well-known/atproto-did`
+1. Curl the well-known directly: `curl -i https://akram.dev.fuzex.social/.well-known/atproto-did`
    - Should return 200 with DID body, no trailing newline
-2. Verify the user is in Postgres: `sudo -u postgres psql -d fuzex_social -c "SELECT username, did FROM users WHERE handle = 'akram.dev.fuzex.app';"`
+2. Verify the user is in Postgres: `sudo -u postgres psql -d fuzex_social -c "SELECT username, did FROM users WHERE handle = 'akram.dev.fuzex.social';"`
 3. AppView caches negative results for ~1 hour. Wait or sign out + back in
 4. Check Caddy logs for the request: `docker logs caddy --tail 50 | grep akram`
 

@@ -24,14 +24,14 @@ function stripPort(host: string): string {
 /**
  * Extracts the username portion of a handle given a known domain suffix.
  *
- * Examples (domain `.dev.fuzex.app`):
- *  - `akram.dev.fuzex.app` → { ok: true, username: 'akram' }
- *  - `akram.dev.fuzex.app:443` → strips port → { ok: true, username: 'akram' }
- *  - `evil.akram.dev.fuzex.app` → { ok: false, reason: 'CONTAINS_SUBDOMAINS' }
+ * Examples (domain `.dev.fuzex.social`):
+ *  - `akram.dev.fuzex.social` → { ok: true, username: 'akram' }
+ *  - `akram.dev.fuzex.social:443` → strips port → { ok: true, username: 'akram' }
+ *  - `evil.akram.dev.fuzex.social` → { ok: false, reason: 'CONTAINS_SUBDOMAINS' }
  *  - `something.else.com` → { ok: false, reason: 'NOT_MATCHING_DOMAIN' }
  *
  * @param input - Fully-qualified handle (host header value or atproto handle).
- * @param domainSuffix - The domain suffix including leading dot (e.g., '.dev.fuzex.app').
+ * @param domainSuffix - The domain suffix including leading dot (e.g., '.dev.fuzex.social').
  * @returns A discriminated result.
  */
 export function parseHandle(input: string, domainSuffix: string): ParseHandleResult {

@@ -15,12 +15,12 @@ describe('atproto routes', () => {
   beforeAll(async () => {
     createAccountExec = jest.fn(async () => ({
       did: 'did:plc:test',
-      handle: 'akram.dev.fuzex.app',
+      handle: 'akram.dev.fuzex.social',
       displayName: 'Akram',
     }));
     getSessionExec = jest.fn(async () => ({
       did: 'did:plc:test',
-      handle: 'akram.dev.fuzex.app',
+      handle: 'akram.dev.fuzex.social',
       accessJwt: 'access-jwt',
       refreshJwt: 'refresh-jwt',
     }));

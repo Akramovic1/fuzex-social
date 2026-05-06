@@ -1,7 +1,8 @@
 # Production VPS Setup
 
 This is the playbook for provisioning the **production** VPS that hosts the
-Bluesky PDS and `fuzex-api` for `fuzex.app`.
+Bluesky PDS and `fuzex-api` for `fuzex.social`. (The `fuzex.app` domain is
+reserved for the marketing site and the main app; see ADR 0007.)
 
 It builds on the dev experience but adds the hardening dev skipped: a dedicated
 non-root user, automated backups, monitoring, stricter rate limits, and tighter
@@ -28,7 +29,7 @@ extra RAM. Cost difference is ~$3/mo. Worth it for production.
 
 ## Domain plan
 
-Production uses the bare `fuzex.app` zone with these new records:
+Production uses the bare `fuzex.social` zone with these records:
 
 | Type | Name | Content | Proxy |
 |---|---|---|---|
@@ -36,7 +37,7 @@ Production uses the bare `fuzex.app` zone with these new records:
 | A | `api` | `<prod-vps-ip>` | DNS only (gray cloud) |
 | A | `*` (wildcard) | `<prod-vps-ip>` | DNS only (gray cloud) |
 
-User handles look like `username.fuzex.app` instead of dev's `username.dev.fuzex.app`.
+User handles look like `username.fuzex.social` instead of dev's `username.dev.fuzex.social`.
 
 ⚠️ **Existing records that MUST be preserved**: anything currently on
 `fuzex.app` (the marketing site, app subdomain, email/SMTP records, etc.).
@@ -50,7 +51,7 @@ Before pressing "Create Server" on Hetzner:
 - [ ] Production passwords/keys NOT yet generated (do this on the server, never in browser)
 - [ ] DNS plan reviewed — no conflicts with existing `fuzex.app` records
 - [ ] Cloudflare API token for `fuzex.app` DNS Edit ready (can reuse the dev one if scoped to the whole zone)
-- [ ] Resend production domain decision made (recommended: `email.fuzex.app` is reused for prod, OR a separate `mail.fuzex.app`)
+- [ ] Resend production domain decision made (recommended: `email.fuzex.social` is reused for prod, OR a separate `mail.fuzex.social`)
 - [ ] Backblaze B2 (or alternative off-server backup target) account created
 - [ ] UptimeRobot account created
 - [ ] Sentry project created (optional but recommended for prod)
@@ -198,16 +199,16 @@ In Cloudflare:
 
 ```bash
 # From your local machine, verify
-dig +short A pds.fuzex.app
-dig +short A api.fuzex.app
-dig +short A randomname.fuzex.app   # should also return the VPS IP via wildcard
+dig +short A pds.fuzex.social
+dig +short A api.fuzex.social
+dig +short A randomname.fuzex.social   # should also return the VPS IP via wildcard
 ```
 
 ## Step 4 — Resend for production email
 
 Either:
-- **Reuse `email.fuzex.app`** if your dev/prod don't need separate reputation
-- **Add a separate domain** (e.g., `mail.fuzex.app`) for prod-only reputation isolation
+- **Reuse `email.fuzex.social`** if your dev/prod don't need separate reputation
+- **Add a separate domain** (e.g., `mail.fuzex.social`) for prod-only reputation isolation
 
 Either way, create a NEW API key scoped to production. Save in password
 manager as **"Resend API Key (FuzeX Prod PDS SMTP)"**.
@@ -223,18 +224,18 @@ bash installer.sh
 ```
 
 Prompts:
-- Domain: `pds.fuzex.app`
+- Domain: `pds.fuzex.social`
 - Email: `tech@fuzex.io`
 
 After install, configure for prod handle domain:
 
 ```bash
-echo 'PDS_SERVICE_HANDLE_DOMAINS=.fuzex.app' >> /pds/pds.env
+echo 'PDS_SERVICE_HANDLE_DOMAINS=.fuzex.social' >> /pds/pds.env
 echo 'PDS_INVITE_REQUIRED=true' >> /pds/pds.env
 
 cat >> /pds/pds.env <<EOF
 PDS_EMAIL_SMTP_URL=smtps://resend:<RESEND_PROD_API_KEY>@smtp.resend.com:465
-PDS_EMAIL_FROM_ADDRESS=noreply@email.fuzex.app
+PDS_EMAIL_FROM_ADDRESS=noreply@email.fuzex.social
 EOF
 
 cd /pds && docker compose restart pds
@@ -322,8 +323,8 @@ LOG_LEVEL=info
 DATABASE_URL=postgresql://fuzex_api:THE_PASSWORD@localhost:5432/fuzex_social
 
 # Production handle domain (note: NO 'dev' prefix)
-HANDLE_DOMAIN=.fuzex.app
-PDS_URL=https://pds.fuzex.app
+HANDLE_DOMAIN=.fuzex.social
+PDS_URL=https://pds.fuzex.social
 
 # Production CORS — only the actual production origins
 CORS_ALLOWED_ORIGINS=https://app.fuzex.app,https://fuzex.app
@@ -355,11 +356,12 @@ sudo -u fuzex pm2 save
 cp /pds/caddy/etc/caddy/Caddyfile /pds/caddy/etc/caddy/Caddyfile.before-fuzex-api
 cp /opt/fuzex-social/infrastructure/caddy/Caddyfile.dev /pds/caddy/etc/caddy/Caddyfile
 
-# IMPORTANT: production uses bare fuzex.app, not dev.fuzex.app
-# Edit the Caddyfile to replace 'dev.fuzex.app' with 'fuzex.app' in all 3 site blocks
-sed -i 's/\.dev\.fuzex\.app/.fuzex.app/g' /pds/caddy/etc/caddy/Caddyfile
-sed -i 's/\bpds\.dev\.fuzex\.app/pds.fuzex.app/g' /pds/caddy/etc/caddy/Caddyfile
-sed -i 's/\bapi\.dev\.fuzex\.app/api.fuzex.app/g' /pds/caddy/etc/caddy/Caddyfile
+# IMPORTANT: production uses bare fuzex.social, not dev.fuzex.social
+# Edit the Caddyfile to replace 'dev.fuzex.social' with 'fuzex.social' in all 3 site blocks,
+# and the api hostname from 'dev-api.fuzex.social' to 'api.fuzex.social'.
+sed -i 's/\.dev\.fuzex\.social/.fuzex.social/g' /pds/caddy/etc/caddy/Caddyfile
+sed -i 's/\bpds\.dev\.fuzex\.social/pds.fuzex.social/g' /pds/caddy/etc/caddy/Caddyfile
+sed -i 's/\bdev-api\.fuzex\.social/api.fuzex.social/g' /pds/caddy/etc/caddy/Caddyfile
 
 # Validate
 docker exec caddy caddy validate --config /etc/caddy/Caddyfile
@@ -418,7 +420,7 @@ Run this once a quarter.
 ### Health check (UptimeRobot)
 
 Add a monitor:
-- URL: `https://api.fuzex.app/health`
+- URL: `https://api.fuzex.social/health`
 - Type: HTTPS
 - Interval: 5 minutes
 - Alert contact: tech@fuzex.io + a Slack/SMS for high-severity
@@ -426,7 +428,7 @@ Add a monitor:
 ### SSL expiry monitoring
 
 Add a second UptimeRobot monitor with type "SSL" pointing at
-`https://api.fuzex.app`. Caddy auto-renews, but a second pair of eyes is
+`https://api.fuzex.social`. Caddy auto-renews, but a second pair of eyes is
 cheap insurance.
 
 ### Application errors (Sentry — optional)
@@ -458,8 +460,8 @@ EOF
 From your local machine:
 
 ```bash
-curl https://api.fuzex.app/health
-curl -i https://<some-real-user>.fuzex.app/.well-known/atproto-did
+curl https://api.fuzex.social/health
+curl -i https://<some-real-user>.fuzex.social/.well-known/atproto-did
 ```
 
 Both should return 200 with expected payloads.

@@ -7,7 +7,7 @@ import { UsersRepository } from './usersRepository.js';
 const SEED_USER = {
   firebaseUid: 'firebase_test_user_1',
   username: 'akram',
-  handle: 'akram.dev.fuzex.app',
+  handle: 'akram.dev.fuzex.social',
   did: 'did:plc:cwbqnunxsu7isx4vv4zul4un',
   walletAddress: '0x0000000000000000000000000000000000000001',
 } as const;
@@ -41,7 +41,7 @@ describe('UsersRepository', () => {
         repo.insert({
           ...SEED_USER,
           firebaseUid: 'firebase_test_user_2',
-          handle: 'akram2.dev.fuzex.app',
+          handle: 'akram2.dev.fuzex.social',
           did: 'did:plc:differentdid000000000000000',
         }),
       ).rejects.toThrow(/username/);
@@ -53,7 +53,7 @@ describe('UsersRepository', () => {
       await repo.insert(SEED_USER);
       const found = await repo.findByUsername('akram');
       expect(found).not.toBeNull();
-      expect(found?.handle).toBe('akram.dev.fuzex.app');
+      expect(found?.handle).toBe('akram.dev.fuzex.social');
     });
 
     it('returns null when not found', async () => {
@@ -65,12 +65,12 @@ describe('UsersRepository', () => {
   describe('findByHandle', () => {
     it('returns the user when found', async () => {
       await repo.insert(SEED_USER);
-      const found = await repo.findByHandle('akram.dev.fuzex.app');
+      const found = await repo.findByHandle('akram.dev.fuzex.social');
       expect(found?.username).toBe('akram');
     });
 
     it('returns null when not found', async () => {
-      const found = await repo.findByHandle('nope.dev.fuzex.app');
+      const found = await repo.findByHandle('nope.dev.fuzex.social');
       expect(found).toBeNull();
     });
   });

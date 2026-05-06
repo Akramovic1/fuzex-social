@@ -9,6 +9,7 @@
 | [`deployment.md`](./deployment.md) | Deploy fuzex-api to the dev VPS |
 | [`production-vps-setup.md`](./production-vps-setup.md) | Provision a fresh production VPS |
 | [`vps-dev-setup-history.md`](./vps-dev-setup-history.md) | How the dev VPS was originally provisioned (with dead ends) |
+| [`migration-fuzex-app-to-social.md`](./migration-fuzex-app-to-social.md) | VPS step-by-step playbook for the `fuzex.app` → `fuzex.social` domain migration |
 | [`operations.md`](./operations.md) | Day-2 ops: logs, backups, troubleshooting |
 
 ## Reference
@@ -28,6 +29,7 @@
 | [`decisions/0004-synthetic-email-for-phone-only-users.md`](./decisions/0004-synthetic-email-for-phone-only-users.md) | Synthesize a placeholder email for phone-only signups |
 | [`decisions/0005-firestore-as-source-of-truth-for-profile-data.md`](./decisions/0005-firestore-as-source-of-truth-for-profile-data.md) | Read profile data from Firestore at signup |
 | [`decisions/0006-encrypted-pds-passwords-in-postgres.md`](./decisions/0006-encrypted-pds-passwords-in-postgres.md) | Encrypt per-user PDS passwords at rest in Postgres (Phase 2) |
+| [`decisions/0007-migrate-to-fuzex-social-domain.md`](./decisions/0007-migrate-to-fuzex-social-domain.md) | Move all social/atproto hostnames to fuzex.social |
 
 ## Generation prompts
 

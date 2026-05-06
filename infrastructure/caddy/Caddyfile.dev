@@ -1,3 +1,12 @@
+# Dev VPS Caddy config — fuzex.social domain.
+#
+# Replaces the previous fuzex.app version (see docs/vps-dev-setup-history.md
+# Step 10 and ADR 0007 for the migration rationale). The fuzex.app domain
+# stays reserved for the marketing site and main app; everything atproto/
+# social-related lives under fuzex.social.
+#
+# Last updated: 2026-05-06
+
 {
 	email tech@fuzex.io
 	on_demand_tls {
@@ -5,27 +14,24 @@
 	}
 }
 
-# Bluesky PDS — kept at original hostname so akram's PLC document
-# and federation cache remain valid.
-*.pds.dev.fuzex.app, pds.dev.fuzex.app {
-	tls {
-		on_demand
-	}
+# Bluesky PDS — managed TLS (cert obtained at startup via HTTP-01).
+# `pds.dev.fuzex.social` is a sibling subdomain (not under the *.dev.fuzex.social
+# wildcard), so Caddy issues the cert directly without consulting /tls-check.
+pds.dev.fuzex.social {
 	reverse_proxy http://localhost:3000
 }
 
-# fuzex-api — sibling subdomain (NOT under *.dev.fuzex.app wildcard).
-# Caddy auto-issues a normal Let's Encrypt cert at startup.
-dev-api.fuzex.app {
+# fuzex-api — sibling subdomain, managed Let's Encrypt cert.
+dev-api.fuzex.social {
 	reverse_proxy http://localhost:3001 {
 		header_up Host {host}
 		header_up X-Real-IP {remote_host}
 	}
 }
 
-# User handle subdomains (akram.dev.fuzex.app, etc.) — on-demand TLS
-# gated by PDS's /tls-check (only registered handles get certs).
-*.dev.fuzex.app {
+# User handle subdomains (akram.dev.fuzex.social, etc.) — on-demand TLS
+# gated by PDS /tls-check (only registered handles get certs).
+*.dev.fuzex.social {
 	tls {
 		on_demand
 	}

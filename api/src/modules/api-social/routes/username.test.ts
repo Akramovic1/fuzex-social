@@ -8,7 +8,7 @@ import { truncateAll } from '@/shared/testing/testDb.js';
 const SEED_USER = {
   firebaseUid: 'firebase-username-test',
   username: 'akram',
-  handle: 'akram.dev.fuzex.app',
+  handle: 'akram.dev.fuzex.social',
   did: 'did:plc:cwbqnunxsu7isx4vv4zul4un',
   walletAddress: '0x0000000000000000000000000000000000000001',
 } as const;

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- (Domain migration) All fuzex-api and PDS hostnames moved from `fuzex.app`
+  to `fuzex.social`. fuzex-api now lives at `dev-api.fuzex.social` (dev),
+  `api.fuzex.social` (prod). PDS at `pds.dev.fuzex.social` (dev),
+  `pds.fuzex.social` (prod). User handles are `username.dev.fuzex.social`
+  (dev), `username.fuzex.social` (prod). See ADR 0007.
+- (Domain migration) Synthetic email for phone-only signups now uses
+  `email.fuzex.social` instead of `email.fuzex.app`.
+- (Domain migration) Caddyfile.dev updated to serve fuzex.social hostnames
+  and remove fuzex.app social routing.
+
+### Deprecated
+- `dev-api.fuzex.app`, `pds.dev.fuzex.app`, `*.dev.fuzex.app` — replaced
+  by `.fuzex.social` equivalents. Will be removed from DNS after a 7-14
+  day transition window.
+
 ### Added (Phase 2)
 - `firebase-admin` SDK integration for ID-token verification + Firestore reads
 - Firebase auth middleware (`createFirebaseAuthMiddleware`) verifying Bearer tokens via `verifyIdToken`

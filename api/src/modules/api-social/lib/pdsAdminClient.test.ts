@@ -43,7 +43,7 @@ describe('PdsAdminClient', () => {
         new Response(
           JSON.stringify({
             did: 'did:plc:abc',
-            handle: 'akram.dev.fuzex.app',
+            handle: 'akram.dev.fuzex.social',
             accessJwt: 'access-jwt',
             refreshJwt: 'refresh-jwt',
           }),
@@ -54,7 +54,7 @@ describe('PdsAdminClient', () => {
     const client = makeClient(fetcher);
     const result = await client.createAccount({
       email: 'akram@example.com',
-      handle: 'akram.dev.fuzex.app',
+      handle: 'akram.dev.fuzex.social',
       password: 'pwd',
     });
 
@@ -71,7 +71,7 @@ describe('PdsAdminClient', () => {
     await expect(
       client.createAccount({
         email: 'a@b.c',
-        handle: 'taken.dev.fuzex.app',
+        handle: 'taken.dev.fuzex.social',
         password: 'pwd',
       }),
     ).rejects.toThrow(/PDS createAccount failed: 400/);
@@ -83,7 +83,7 @@ describe('PdsAdminClient', () => {
         new Response(
           JSON.stringify({
             did: 'did:plc:abc',
-            handle: 'akram.dev.fuzex.app',
+            handle: 'akram.dev.fuzex.social',
             accessJwt: 'a',
             refreshJwt: 'r',
           }),
@@ -92,8 +92,8 @@ describe('PdsAdminClient', () => {
     ) as unknown as typeof fetch;
 
     const client = makeClient(fetcher);
-    const result = await client.createSession('akram.dev.fuzex.app', 'pwd');
-    expect(result.handle).toBe('akram.dev.fuzex.app');
+    const result = await client.createSession('akram.dev.fuzex.social', 'pwd');
+    expect(result.handle).toBe('akram.dev.fuzex.social');
     expect(result.accessJwt).toBe('a');
   });
 

@@ -3,9 +3,15 @@
 This guide describes the signup + session flow the mobile app implements
 against fuzex-api's Phase 2 endpoints.
 
+> **Domain migration (2026-05):** fuzex-api now lives at `dev-api.fuzex.social`.
+> Old hostnames on `dev-api.fuzex.app` have been deprecated. The mobile team
+> must update their HTTP base URL to the new hostname. Production will be
+> `api.fuzex.social` (no env prefix). See
+> [ADR 0007](./decisions/0007-migrate-to-fuzex-social-domain.md).
+
 ## Audience
 
-Flutter engineers integrating against `https://dev-api.fuzex.app` (dev) or
+Flutter engineers integrating against `https://dev-api.fuzex.social` (dev) or
 the future production API.
 
 ## Prerequisites
@@ -82,7 +88,7 @@ with a descriptive `error.message`.
 ```dart
 final idToken = await firebaseUser.getIdToken();
 final response = await http.post(
-  Uri.parse('https://dev-api.fuzex.app/v1/atproto/createAccount'),
+  Uri.parse('https://dev-api.fuzex.social/v1/atproto/createAccount'),
   headers: {
     'Authorization': 'Bearer $idToken',
     'Content-Type': 'application/json',
@@ -113,7 +119,7 @@ access JWT via:
 ```dart
 final idToken = await firebaseUser.getIdToken();
 final response = await http.post(
-  Uri.parse('https://dev-api.fuzex.app/v1/atproto/getSession'),
+  Uri.parse('https://dev-api.fuzex.social/v1/atproto/getSession'),
   headers: {'Authorization': 'Bearer $idToken'},
 );
 
@@ -134,7 +140,7 @@ also expired or been invalidated.
 
 ```dart
 final response = await http.get(
-  Uri.parse('https://dev-api.fuzex.app/v1/username/check?username=$candidate'),
+  Uri.parse('https://dev-api.fuzex.social/v1/username/check?username=$candidate'),
 );
 final body = jsonDecode(response.body);
 final available = body['available'] as bool;
@@ -200,7 +206,7 @@ For local end-to-end tests against a dev instance of fuzex-api:
 1. Run the API: `npm run dev` (port 3001 by default).
 2. Use a real Firebase ID token from the mobile app pointed at the dev
    Firebase project (`fuzex-41211`).
-3. Replace `https://dev-api.fuzex.app` with `http://localhost:3001`.
+3. Replace `https://dev-api.fuzex.social` with `http://localhost:3001`.
 
 Note: localhost API needs a Firebase service account JSON at
 `api/firebase-dev-service-account.json` (mode 600). It must belong to the

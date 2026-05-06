@@ -1,6 +1,6 @@
 # API Reference
 
-Phase 1 endpoints. All endpoints are under `https://dev-api.fuzex.app` unless noted.
+Phase 1 endpoints. All endpoints are under `https://dev-api.fuzex.social` unless noted.
 
 ## GET /health
 
@@ -10,7 +10,7 @@ Liveness check with database ping.
 **Response:** `application/json`
 
 ```bash
-curl https://dev-api.fuzex.app/health
+curl https://dev-api.fuzex.social/health
 ```
 
 ```json
@@ -38,7 +38,7 @@ cases where the load balancer should remove the instance.
 
 Resolves a handle to its DID for atproto handle verification.
 
-**Hostname:** Called on user-handle subdomains (e.g., `https://akram.dev.fuzex.app/.well-known/atproto-did`).
+**Hostname:** Called on user-handle subdomains (e.g., `https://akram.dev.fuzex.social/.well-known/atproto-did`).
 The endpoint reads the `Host` header to identify the user.
 
 **Auth:** None (public; called by Bluesky's AppView)
@@ -46,7 +46,7 @@ The endpoint reads the `Host` header to identify the user.
 **Response on success:** `text/plain; charset=utf-8`, body is the DID with **no trailing newline**
 
 ```bash
-curl https://akram.dev.fuzex.app/.well-known/atproto-did
+curl https://akram.dev.fuzex.social/.well-known/atproto-did
 # did:plc:cwbqnunxsu7isx4vv4zul4un
 ```
 
@@ -69,12 +69,12 @@ Public tipping resolver. Given a handle, returns the wallet address to tip.
 **Response:** `application/json`
 
 ```bash
-curl https://dev-api.fuzex.app/v1/resolve/akram.dev.fuzex.app
+curl https://dev-api.fuzex.social/v1/resolve/akram.dev.fuzex.social
 ```
 
 ```json
 {
-  "handle": "akram.dev.fuzex.app",
+  "handle": "akram.dev.fuzex.social",
   "did": "did:plc:cwbqnunxsu7isx4vv4zul4un",
   "walletAddress": "0x0000000000000000000000000000000000000001",
   "chain": "ethereum",
@@ -162,7 +162,7 @@ from that document. See [integration-with-mobile.md](./integration-with-mobile.m
 ```json
 {
   "did": "did:plc:cwbqnunxsu7isx4vv4zul4un",
-  "handle": "akram.dev.fuzex.app",
+  "handle": "akram.dev.fuzex.social",
   "displayName": "Akram"
 }
 ```
@@ -190,7 +190,7 @@ Issues a fresh PDS session (access + refresh JWTs) for an existing user.
 ```json
 {
   "did": "did:plc:cwbqnunxsu7isx4vv4zul4un",
-  "handle": "akram.dev.fuzex.app",
+  "handle": "akram.dev.fuzex.social",
   "accessJwt": "<pds-access-jwt>",
   "refreshJwt": "<pds-refresh-jwt>"
 }

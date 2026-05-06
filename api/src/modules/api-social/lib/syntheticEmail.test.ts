@@ -23,12 +23,12 @@ describe('deriveEmail', () => {
 
   it('synthesizes a phone-based email when no email is present', () => {
     const result = deriveEmail(ctx({ phoneNumber: '+1 (555) 123-4567' }));
-    expect(result).toBe('phone-15551234567@email.fuzex.app');
+    expect(result).toBe('phone-15551234567@email.fuzex.social');
   });
 
   it('falls back to a uid-based email when neither email nor phone is present', () => {
     const result = deriveEmail(ctx({ uid: 'firebase-uid-XYZ' }));
-    expect(result).toBe('uid-firebase-uid-XYZ@email.fuzex.app');
+    expect(result).toBe('uid-firebase-uid-XYZ@email.fuzex.social');
   });
 
   it('prefers email over phone when both are present', () => {
@@ -39,8 +39,8 @@ describe('deriveEmail', () => {
 
 describe('isSyntheticEmail', () => {
   it('returns true for an address under SYNTHETIC_EMAIL_DOMAIN', () => {
-    expect(isSyntheticEmail('phone-15551234567@email.fuzex.app')).toBe(true);
-    expect(isSyntheticEmail('uid-abc@email.fuzex.app')).toBe(true);
+    expect(isSyntheticEmail('phone-15551234567@email.fuzex.social')).toBe(true);
+    expect(isSyntheticEmail('uid-abc@email.fuzex.social')).toBe(true);
   });
 
   it('returns false for real-looking addresses', () => {

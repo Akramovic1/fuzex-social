@@ -9,6 +9,30 @@ Bluesky PDS on a single Hetzner VPS and exposes endpoints used by:
 - The FuzeX mobile app (tipping resolver via `/v1/resolve/:handle`)
 - Future authenticated flows (account creation, session minting — Phase 2)
 
+## Domain architecture
+
+The project deliberately splits its hostnames across two domains:
+
+| Domain | Purpose |
+|---|---|
+| `fuzex.app` | Marketing site, web app (`app.fuzex.app`), booking/payments API (`api.fuzex.app`), AI agent. Email reputation for the main app on `email.fuzex.app`. |
+| `fuzex.social` | atproto identities, PDS, fuzex-api, user handles. Synthetic email domain `email.fuzex.social` for phone-only signups. |
+
+Why split:
+
+- `username.fuzex.social` reads cleanly as a social handle. `username.fuzex.app`
+  was ambiguous (sounds like an app subdomain).
+- Federation hygiene — relays and other PDS instances see only `fuzex.social`
+  for atproto interactions; outages on the main app domain don't affect them.
+- Independent scaling/operations — DNS or cert issues on one domain don't
+  cascade to the other.
+- Frees `api.fuzex.app` for the existing FuzeX product backend (booking,
+  payments) without colliding with the planned production fuzex-api hostname.
+
+See [ADR 0007](./decisions/0007-migrate-to-fuzex-social-domain.md) for the
+full decision and [`migration-fuzex-app-to-social.md`](./migration-fuzex-app-to-social.md)
+for the migration playbook.
+
 ## System diagram
 
 ```
@@ -54,10 +78,10 @@ social-layer data lives in the VPS Postgres.
 
 - Auto-issues SSL via Let's Encrypt with on-demand TLS
 - Routes by hostname:
-  - `pds.dev.fuzex.app`, `*.pds.dev.fuzex.app` → PDS (port 3000)
-  - `dev-api.fuzex.app` → fuzex-api (port 3001)
-  - `*.dev.fuzex.app/.well-known/atproto-did` → fuzex-api
-  - everything else under `*.dev.fuzex.app` → 404
+  - `pds.dev.fuzex.social`, `*.pds.dev.fuzex.social` → PDS (port 3000)
+  - `dev-api.fuzex.social` → fuzex-api (port 3001)
+  - `*.dev.fuzex.social/.well-known/atproto-did` → fuzex-api
+  - everything else under `*.dev.fuzex.social` → 404
 
 ### Bluesky PDS
 
@@ -104,19 +128,19 @@ social-layer data lives in the VPS Postgres.
 ### Atproto handle verification
 
 ```
-Bluesky AppView wants to verify "akram.dev.fuzex.app"
+Bluesky AppView wants to verify "akram.dev.fuzex.social"
   ↓
-Bluesky calls https://akram.dev.fuzex.app/.well-known/atproto-did
+Bluesky calls https://akram.dev.fuzex.social/.well-known/atproto-did
   ↓
 Cloudflare DNS returns VPS IP
   ↓
 Caddy receives request
-  - matches *.dev.fuzex.app block
+  - matches *.dev.fuzex.social block
   - matches /.well-known/atproto-did
   - reverse-proxies to localhost:3001 with original Host header
   ↓
 fuzex-api wellKnownAtprotoDid route
-  - reads Host header: "akram.dev.fuzex.app"
+  - reads Host header: "akram.dev.fuzex.social"
   - parseHandle() → username "akram"
   - validates format + checks reserved list
   - UsersRepository.findByUsername("akram")
@@ -130,9 +154,9 @@ Handle valid ✅
 ### Tipping flow (future use, endpoint exists today)
 
 ```
-FuzeX mobile app: user taps "Tip @sara.fuzex.app"
+FuzeX mobile app: user taps "Tip @sara.fuzex.social"
   ↓
-App calls https://dev-api.fuzex.app/v1/resolve/sara.fuzex.app
+App calls https://dev-api.fuzex.social/v1/resolve/sara.fuzex.social
   ↓
 fuzex-api resolveHandle route
   - parses handle, validates, checks reserved
@@ -151,7 +175,7 @@ Mobile app
   2. Embedded wallet system creates wallet → wallet address
   3. Mobile writes Users/{firebase_uid} in Firestore
        { walletAddress, username, name, dateOfBirth, gender }
-  4. POST https://dev-api.fuzex.app/v1/atproto/createAccount
+  4. POST https://dev-api.fuzex.social/v1/atproto/createAccount
        Authorization: Bearer <firebase-id-token>
                                     ↓
 fuzex-api createAccount flow

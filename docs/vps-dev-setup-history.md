@@ -469,6 +469,55 @@ Final Caddyfile committed as `dea2e2e`. End-to-end verification passed.
   subdomain of any wildcard zone. Use `api.fuzex.app` (sibling of any
   `*.<region>.fuzex.app` wildcards) not `api.<region>.fuzex.app`.
 
+## Step 10 — Migration to `fuzex.social` domain
+
+After Phase 2 was deployed and stable on `dev-api.fuzex.app`, the project
+migrated all social/atproto hostnames to a new domain: `fuzex.social`.
+
+### Why
+
+- `username.fuzex.social` reads as a social identity to anyone who sees it,
+  while `username.fuzex.app` is ambiguous (sounds like an app subdomain).
+- Splits concerns at the domain level: `fuzex.app` for the main app/booking
+  flow, `fuzex.social` for the atproto/social layer.
+- Improves federation hygiene — relays and other PDS instances interact only
+  with `*.fuzex.social`, so issues in one domain don't affect the other.
+- Pre-launch is the right time. Migration cost grows with user count; with
+  only one test account (akram), it's trivial now.
+
+### What changed on the VPS
+
+- `PDS_HOSTNAME=pds.dev.fuzex.social` (was `pds.dev.fuzex.app`)
+- `PDS_SERVICE_HANDLE_DOMAINS=.dev.fuzex.social` (was `.dev.fuzex.app`)
+- Caddy now serves `dev-api.fuzex.social`, `pds.dev.fuzex.social`, and the
+  wildcard `*.dev.fuzex.social`. Old `*.dev.fuzex.app` routes removed.
+- fuzex-api `.env` updated: `HANDLE_DOMAIN=.dev.fuzex.social`,
+  `PDS_URL=https://pds.dev.fuzex.social`,
+  `SYNTHETIC_EMAIL_DOMAIN=email.fuzex.social`.
+- akram's account was deleted from PDS and Postgres, then re-seeded with
+  the new handle `akram.dev.fuzex.social`.
+
+### What stayed on `fuzex.app`
+
+- Marketing site and main app domain.
+- The existing FuzeX backend's email reputation
+  (`email.fuzex.app` is no longer used by fuzex-api but remains valid for
+  any other transactional email outside the social stack).
+
+### Cloudflare DNS
+
+- Added: `dev-api.fuzex.social`, `pds.dev.fuzex.social`,
+  `*.dev.fuzex.social` (all gray cloud / DNS-only).
+- Added later for prod: `api.fuzex.social`, `pds.fuzex.social`,
+  `*.fuzex.social` (when production VPS is provisioned).
+- Old `dev-api.fuzex.app`, `pds.dev.fuzex.app`, `*.dev.fuzex.app` records
+  preserved for 7-14 days as a soft transition; can be removed afterwards.
+
+### Migration playbook
+
+See [`docs/migration-fuzex-app-to-social.md`](./migration-fuzex-app-to-social.md)
+for the step-by-step VPS migration commands.
+
 ## Credentials saved to password manager
 
 For a clean record, here's everything from this setup that lives in our
