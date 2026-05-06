@@ -5,28 +5,25 @@
 	}
 }
 
-# fuzex-api: dedicated hostname, normal Let's Encrypt cert (no on-demand needed).
-# This block MUST come before the *.dev.fuzex.app wildcard so its TLS policy
-# takes precedence over the wildcard's on-demand policy.
-api.dev.fuzex.app {
-	tls tech@fuzex.io
-	reverse_proxy http://localhost:3001 {
-		header_up Host {host}
-		header_up X-Real-IP {remote_host}
-	}
-}
-
-# Bluesky PDS — uses on-demand TLS gated by PDS's /tls-check
-*.pds.dev.fuzex.app, pds.dev.fuzex.app {
+# Bluesky PDS — moved out from under the *.dev.fuzex.app wildcard
+# to its own sibling subdomain to avoid TLS policy collisions.
+*.dev-pds.fuzex.app, dev-pds.fuzex.app {
 	tls {
 		on_demand
 	}
 	reverse_proxy http://localhost:3000
 }
 
-# All user handle subdomains: serve /.well-known/atproto-did via fuzex-api,
-# everything else returns 404. On-demand TLS gated by PDS's /tls-check
-# (only registered handles get certs issued).
+# fuzex-api — sibling subdomain, normal Let's Encrypt cert (no on-demand)
+dev-api.fuzex.app {
+	reverse_proxy http://localhost:3001 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+# User handle subdomains (akram.dev.fuzex.app, etc.) — only thing left
+# under the wildcard now. Routes /.well-known/atproto-did to fuzex-api.
 *.dev.fuzex.app {
 	tls {
 		on_demand
