@@ -55,3 +55,36 @@ describe('MyRepository', () => {
   // tests...
 });
 ```
+
+## HTTP integration tests
+
+Use `buildAppHarness()` from [appHarness.ts](./appHarness.ts) to spin up a
+fully-wired app against the test DB on an ephemeral port. Pair with
+`supertest`:
+
+```ts
+import { afterAll, beforeAll, describe, expect, it } from '@jest/globals';
+import request from 'supertest';
+
+import { buildAppHarness, type AppHarness } from '@/shared/testing/appHarness.js';
+
+describe('GET /something', () => {
+  let harness: AppHarness;
+
+  beforeAll(async () => {
+    harness = await buildAppHarness();
+  });
+
+  afterAll(async () => {
+    await harness.close();
+  });
+
+  it('works', async () => {
+    const res = await request(harness.handler).get('/something');
+    expect(res.status).toBe(200);
+  });
+});
+```
+
+The harness creates its own DB pool (separate from the singleton in `getDb()`),
+so tests never hit the production-shaped client.

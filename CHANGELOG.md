@@ -25,7 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database health check helper (`pingDatabase`) with integration test
 - Test DB harness: auto-creates `fuzex_social_test`, runs migrations in jest globalSetup
 - Graceful shutdown now closes the DB pool
+- api-social module skeleton with dependency-injection pattern
+- GET /health endpoint with DB ping (200 ok / 200 degraded — never 5xx for transient DB blips)
+- HTTP integration test infrastructure (appHarness + supertest)
+- 4 integration tests covering /health happy path, X-Request-Id propagation, rate-limit headers
+- app.ts refactored to accept AppDependencies via factory (inversion of control)
 
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`
 - Removed Husky v8 deprecation idiom from hooks (clean v9 layout)
+- Jest coverage exclusions tightened: `app.ts` and `middleware/**` (except errorHandler) are now measured

@@ -26,6 +26,10 @@ multiple times, append `xN` instead of duplicating.
 - Never use `console.*`. Use the pino logger from `@/shared/logger/index.js`
 - Errors thrown from route handlers must extend `AppError` from `@/shared/errors/index.js` — anything else becomes a 500 with no detail leaked to the client
 - Hono middleware order matters: correlationId → CORS → requestLogger → rateLimit → routes
+- HTTP integration tests use `buildAppHarness()` which spins up a real ephemeral http server bound to the test DB. supertest drives it with a real socket. This catches issues that fetch-handler-only tests would miss (e.g., header parsing edge cases)
+- `/health` returns 200 even when the DB is down (`status: "degraded"`). 5xx is reserved for cases where the process should be removed from a load balancer pool. Add `/health/ready` later if pm2/k8s probes need a hard gate
+- Reading `package.json` from a route uses `fs.readFileSync(path.resolve(process.cwd(), 'package.json'))`, NOT `createRequire(import.meta.url)`. The latter looks correct for ESM but breaks under ts-jest's CJS compilation (`tsconfig.test.json` has `module: CommonJS`, which rejects `import.meta`). The fs approach works under both module systems and assumes scripts run from the `api/` directory (true for `tsx`, `jest`, and `node dist/index.js`)
+- App factory uses dependency injection: `buildApp({ db })` rather than reaching for a singleton. Production passes `getDb()`, tests pass a test-DB-bound `Database`. Same pattern for module factories (`buildApiSocialModule({ db })`) and route factories (`buildHealthRoutes({ db })`)
 
 ## Database layer
 
@@ -39,18 +43,22 @@ multiple times, append `xN` instead of duplicating.
 
 ## Coverage tracker
 
-Coverage exclusions added in Prompt 3 (must be re-included as their test coverage lands):
+Current temporary exclusions (must be re-included as their tests land):
 
-- `src/app.ts`                  — re-include in Prompt 4 (HTTP tests via supertest)
 - `src/index.ts`                — keep excluded (bootstrap, hard to unit-test)
-- `src/shared/middleware/**`    — re-include in Prompt 4 (tests exercise via app)
-- `src/shared/errors/**`        — re-include in Prompt 4 (error handler tests)
 - `src/shared/config/**`        — re-include in Prompt 5 (route-level integration)
 - `src/shared/logger/**`        — keep excluded (logger config, side-effect heavy)
-- `src/shared/db/index.ts`      — keep excluded (singleton, tested via integration)
+- `src/shared/errors/**`        — re-include in Prompt 5 or 6 (need error-throwing route to exercise; happy-path /health doesn't trip them)
+- `src/shared/middleware/errorHandler.ts` — re-include alongside `errors/**`
+- `src/shared/db/index.ts`      — keep excluded (singleton)
 - `src/shared/db/migrationRunner.ts` — re-include if pure logic gains tests
+- `src/**/index.ts`             — keep excluded (barrel files)
 
-When re-including, expect coverage to drop initially, then rise as new tests land. Threshold stays at 70%.
+Re-included in Prompt 4:
+- `src/app.ts`                  ✅ exercised via /health integration test (100% coverage)
+- `src/shared/middleware/**` (except errorHandler) ✅ exercised via /health integration test (correlationId, requestLogger 100%; rateLimit 73%)
+
+When re-including, expect coverage to drop initially. Threshold stays at 70%.
 
 ## Known Limitations
 

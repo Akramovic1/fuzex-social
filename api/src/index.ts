@@ -1,7 +1,7 @@
 import { serve, type ServerType } from '@hono/node-server';
 
 import { config } from '@/shared/config/index.js';
-import { closeDb } from '@/shared/db/index.js';
+import { closeDb, getDb } from '@/shared/db/index.js';
 import { logger } from '@/shared/logger/index.js';
 
 import { buildApp } from './app.js';
@@ -9,7 +9,8 @@ import { buildApp } from './app.js';
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 function startServer(): ServerType {
-  const app = buildApp();
+  const db = getDb();
+  const app = buildApp({ db });
 
   const server = serve(
     {
