@@ -25,6 +25,7 @@ export interface ResolvedHandleSummary {
 const VALIDATION_FAILURE_MESSAGES: Record<UsernameValidationFailure, string> = {
   TOO_SHORT: 'username is too short',
   TOO_LONG: 'username is too long',
+  UPPERCASE_NOT_ALLOWED: 'username cannot contain uppercase letters',
   INVALID_CHARSET: 'username contains invalid characters',
   STARTS_OR_ENDS_WITH_HYPHEN: 'username cannot start or end with a hyphen',
   CONSECUTIVE_HYPHENS: 'username cannot contain consecutive hyphens',

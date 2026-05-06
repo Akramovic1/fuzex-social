@@ -115,6 +115,32 @@ describe('FirestoreUserService.fetchUser', () => {
 
     await expect(svc.fetchUser('uid-1')).rejects.toBeInstanceOf(BadRequestError);
   });
+
+  it('throws BadRequestError when the doc has an uppercase username', async () => {
+    // The mobile/wallet pipeline must write usernames lowercased. If the doc
+    // arrives with uppercase letters (e.g. "AKRAM"), fuzex-api must reject —
+    // we never silently lowercase user input. The Firestore zod schema's
+    // `^[a-z0-9-]+$` regex enforces this at the parse boundary.
+    const store: FakeStore = {
+      Users: new Map([['uid-1', { ...VALID_USER, username: 'AKRAM' }]]),
+    };
+    const svc = new FirestoreUserService(buildFakeFirestore(store), {
+      sleep: async () => undefined,
+    });
+
+    await expect(svc.fetchUser('uid-1')).rejects.toBeInstanceOf(BadRequestError);
+  });
+
+  it('throws BadRequestError when the doc has a mixed-case username', async () => {
+    const store: FakeStore = {
+      Users: new Map([['uid-1', { ...VALID_USER, username: 'Akram' }]]),
+    };
+    const svc = new FirestoreUserService(buildFakeFirestore(store), {
+      sleep: async () => undefined,
+    });
+
+    await expect(svc.fetchUser('uid-1')).rejects.toBeInstanceOf(BadRequestError);
+  });
 });
 
 describe('FirestoreUserService.isOldEnough', () => {

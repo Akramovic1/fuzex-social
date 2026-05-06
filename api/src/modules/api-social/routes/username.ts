@@ -25,24 +25,25 @@ export function buildUsernameRoutes(deps: UsernameRoutesDeps): Hono {
       throw new BadRequestError('missing username query parameter');
     }
 
-    const lower = username.toLowerCase();
-
-    const formatResult = validateUsernameFormat(lower);
+    // Validate the user's input AS-IS. Do NOT lowercase first — uppercase is
+    // an explicit format failure (UPPERCASE_NOT_ALLOWED), not something to
+    // silently accept.
+    const formatResult = validateUsernameFormat(username);
     if (!formatResult.ok) {
-      return c.json(
-        { username: lower, available: false, reason: formatResult.reason },
-        HTTP_STATUS.OK,
-      );
+      return c.json({ username, available: false, reason: formatResult.reason }, HTTP_STATUS.OK);
     }
 
-    if (isUsernameReserved(lower)) {
-      return c.json({ username: lower, available: false, reason: 'RESERVED' }, HTTP_STATUS.OK);
+    // After validation succeeds we know `username` is provably already
+    // lowercase (the validator rejects anything else). DB lookup uses it
+    // directly — no extra normalization needed.
+    if (isUsernameReserved(username)) {
+      return c.json({ username, available: false, reason: 'RESERVED' }, HTTP_STATUS.OK);
     }
 
-    const existing = await deps.usersRepository.findByUsername(lower);
+    const existing = await deps.usersRepository.findByUsername(username);
     return c.json(
       {
-        username: lower,
+        username,
         available: existing === null,
         reason: existing === null ? null : 'ALREADY_TAKEN',
       },

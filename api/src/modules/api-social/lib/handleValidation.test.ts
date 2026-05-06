@@ -27,15 +27,29 @@ describe('validateUsernameFormat', () => {
   });
 
   describe('rejects invalid charsets', () => {
-    it.each(['user_name', 'user.name', 'user@name', 'user name', 'UserName', 'usér'])(
-      'rejects %s',
+    it.each(['user_name', 'user.name', 'user@name', 'user name', 'usér'])('rejects %s', (input) => {
+      expect(validateUsernameFormat(input)).toEqual({
+        ok: false,
+        reason: 'INVALID_CHARSET',
+      });
+    });
+  });
+
+  describe('rejects uppercase usernames', () => {
+    it.each(['UserName', 'AKRAM', 'Mixed', 'BADNAME', 'aKrAm'])(
+      'rejects %s with UPPERCASE_NOT_ALLOWED',
       (input) => {
         expect(validateUsernameFormat(input)).toEqual({
           ok: false,
-          reason: 'INVALID_CHARSET',
+          reason: 'UPPERCASE_NOT_ALLOWED',
         });
       },
     );
+
+    it('rejects mixed-case even when other rules would have failed', () => {
+      // 'AB' is too short AND has uppercase — TOO_SHORT wins (length is checked first)
+      expect(validateUsernameFormat('AB')).toEqual({ ok: false, reason: 'TOO_SHORT' });
+    });
   });
 
   describe('rejects hyphen edge cases', () => {

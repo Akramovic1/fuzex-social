@@ -70,4 +70,32 @@ describe('GET /v1/username/check', () => {
     const body = res.body as { error: { code: string } };
     expect(body.error.code).toBe('BAD_REQUEST');
   });
+
+  it('rejects all-uppercase usernames with UPPERCASE_NOT_ALLOWED', async () => {
+    const res = await request(harness.handler).get('/v1/username/check?username=BADNAME');
+    expect(res.status).toBe(200);
+    const body = res.body as { username: string; available: boolean; reason: string };
+    expect(body.available).toBe(false);
+    expect(body.reason).toBe('UPPERCASE_NOT_ALLOWED');
+    // Echo the original input back, NOT a lowercased mutation.
+    expect(body.username).toBe('BADNAME');
+  });
+
+  it('rejects mixed-case usernames with UPPERCASE_NOT_ALLOWED', async () => {
+    const res = await request(harness.handler).get('/v1/username/check?username=Mixed');
+    expect(res.status).toBe(200);
+    const body = res.body as { username: string; available: boolean; reason: string };
+    expect(body.available).toBe(false);
+    expect(body.reason).toBe('UPPERCASE_NOT_ALLOWED');
+    expect(body.username).toBe('Mixed');
+  });
+
+  it('rejects single-uppercase-letter usernames with UPPERCASE_NOT_ALLOWED', async () => {
+    const res = await request(harness.handler).get('/v1/username/check?username=akrAm');
+    expect(res.status).toBe(200);
+    const body = res.body as { username: string; available: boolean; reason: string };
+    expect(body.available).toBe(false);
+    expect(body.reason).toBe('UPPERCASE_NOT_ALLOWED');
+    expect(body.username).toBe('akrAm');
+  });
 });
