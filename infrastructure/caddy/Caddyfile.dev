@@ -5,16 +5,17 @@
 	}
 }
 
-# Bluesky PDS — moved out from under the *.dev.fuzex.app wildcard
-# to its own sibling subdomain to avoid TLS policy collisions.
-*.dev-pds.fuzex.app, dev-pds.fuzex.app {
+# Bluesky PDS — kept at original hostname so akram's PLC document
+# and federation cache remain valid.
+*.pds.dev.fuzex.app, pds.dev.fuzex.app {
 	tls {
 		on_demand
 	}
 	reverse_proxy http://localhost:3000
 }
 
-# fuzex-api — sibling subdomain, normal Let's Encrypt cert (no on-demand)
+# fuzex-api — sibling subdomain (NOT under *.dev.fuzex.app wildcard).
+# Caddy auto-issues a normal Let's Encrypt cert at startup.
 dev-api.fuzex.app {
 	reverse_proxy http://localhost:3001 {
 		header_up Host {host}
@@ -22,8 +23,8 @@ dev-api.fuzex.app {
 	}
 }
 
-# User handle subdomains (akram.dev.fuzex.app, etc.) — only thing left
-# under the wildcard now. Routes /.well-known/atproto-did to fuzex-api.
+# User handle subdomains (akram.dev.fuzex.app, etc.) — on-demand TLS
+# gated by PDS's /tls-check (only registered handles get certs).
 *.dev.fuzex.app {
 	tls {
 		on_demand
