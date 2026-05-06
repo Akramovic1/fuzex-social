@@ -40,7 +40,7 @@ pull_latest() {
 install_deps() {
   log "installing dependencies (npm ci)"
   cd "$API_DIR"
-  npm ci --omit=optional
+  npm ci
   ok "dependencies installed"
 }
 
