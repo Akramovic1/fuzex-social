@@ -1,10 +1,38 @@
-# Documentation
+# Documentation index
+
+## How-tos and playbooks
 
 | File | Purpose |
 |---|---|
-| `architecture.md` | System design overview |
-| `deployment.md` | Deployment guide |
-| `operations.md` | Day-2 operations |
-| `api-reference.md` | Endpoint reference |
-| `decisions/` | Architecture Decision Records (ADRs) |
-| `prompts/` | Build prompts (used to generate this codebase) |
+| [`local-dev-setup.md`](./local-dev-setup.md) | Set up the project locally on your dev machine |
+| [`deployment.md`](./deployment.md) | Deploy fuzex-api to the dev VPS |
+| [`production-vps-setup.md`](./production-vps-setup.md) | Provision a fresh production VPS |
+| [`vps-dev-setup-history.md`](./vps-dev-setup-history.md) | How the dev VPS was originally provisioned (with dead ends) |
+| [`operations.md`](./operations.md) | Day-2 ops: logs, backups, troubleshooting |
+
+## Reference
+
+| File | Purpose |
+|---|---|
+| [`architecture.md`](./architecture.md) | System design with diagrams |
+| [`api-reference.md`](./api-reference.md) | HTTP endpoint reference |
+
+## Architecture Decision Records
+
+| File | Decision |
+|---|---|
+| [`decisions/0001-postgres-on-vps.md`](./decisions/0001-postgres-on-vps.md) | Use VPS-local Postgres for social-layer data |
+| [`decisions/0002-no-redis-phase-1.md`](./decisions/0002-no-redis-phase-1.md) | No Redis cache in Phase 1 |
+| [`decisions/0003-firestore-untouched.md`](./decisions/0003-firestore-untouched.md) | Existing Firestore data stays in Firestore |
+
+## Generation prompts
+
+| File | Phase |
+|---|---|
+| `prompts/01-repo-skeleton.md` | Repo skeleton + tooling |
+| `prompts/02-shared-infrastructure.md` | Config, logger, errors, middleware |
+| `prompts/03-database-layer.md` | Drizzle schema, migrations, repositories |
+| `prompts/04-health-endpoint.md` | /health endpoint + module skeleton |
+| `prompts/05-atproto-endpoints.md` | /.well-known/atproto-did + /v1/resolve/:handle |
+| `prompts/06-deployment.md` | Caddyfile, scripts, deploy docs |
+| `prompts/07-vps-history-and-onboarding.md` | This batch (history + production + local dev docs) |

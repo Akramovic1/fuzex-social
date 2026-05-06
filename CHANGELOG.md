@@ -48,6 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Operations runbook (docs/operations.md)
 - API reference (docs/api-reference.md)
 - ADRs: 0001 (Postgres on VPS), 0002 (No Redis Phase 1), 0003 (Firestore untouched)
+- docs/local-dev-setup.md — onboarding guide for local development
+- docs/production-vps-setup.md — prescriptive playbook for provisioning a production VPS with hardening (dedicated user, automated backups, monitoring, stricter rate limits)
+- docs/vps-dev-setup-history.md — narrative account of the dev VPS provisioning, including dead ends and lessons learned
+- README.md "Getting started" table linking to all major docs by audience
+- docs/README.md doc index
 
 ### Changed
 - Moved Husky hooks to repo root (idiomatic Husky v9 layout); `prepare` script updated from `husky install api/.husky` (deprecated) to `husky`

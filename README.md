@@ -1,19 +1,21 @@
 # fuzex-social
 
-The social/atproto layer for **FuzeX** — decentralized social media + activity booking + crypto wallet platform.
+The social/atproto layer for **FuzeX** — decentralized social media + activity
+booking + crypto wallet platform.
 
-This monorepo contains the Hono backend, Postgres schema, infrastructure configs, and deployment scripts that connect FuzeX to the atproto network (Bluesky federation).
+This monorepo contains the Hono backend (`api/`), Postgres schema, infrastructure
+configs, and deployment scripts that connect FuzeX to the atproto network.
 
-## Architecture (high level)
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  Hetzner VPS (Nuremberg)                                         │
-│                                                                   │
-│  Caddy ─┬─→ Bluesky PDS (port 3000) ─── PDS SQLite              │
-│         └─→ fuzex-api (port 3001) ─→ Postgres (port 5432)       │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  Hetzner VPS (Nuremberg)                                          │
+│                                                                    │
+│  Caddy ─┬─→ Bluesky PDS (port 3000) ─── PDS SQLite               │
+│         └─→ fuzex-api (port 3001) ─→ Postgres (port 5432)        │
+│                                                                    │
+└──────────────────────────────────────────────────────────────────┘
 
 External (cloud):
 - Firestore     — existing FuzeX product data (untouched)
@@ -22,45 +24,27 @@ External (cloud):
 - Resend        — SMTP for PDS
 ```
 
-## Repository Structure
+For the full design, see [`docs/architecture.md`](./docs/architecture.md).
+
+## Getting started
+
+| Audience | Start here |
+|---|---|
+| New developer setting up locally | [`docs/local-dev-setup.md`](./docs/local-dev-setup.md) |
+| Deploying to the dev VPS | [`docs/deployment.md`](./docs/deployment.md) |
+| Provisioning a fresh production VPS | [`docs/production-vps-setup.md`](./docs/production-vps-setup.md) |
+| Day-2 operations | [`docs/operations.md`](./docs/operations.md) |
+| API endpoint reference | [`docs/api-reference.md`](./docs/api-reference.md) |
+| How the dev VPS was originally provisioned | [`docs/vps-dev-setup-history.md`](./docs/vps-dev-setup-history.md) |
+
+## Repository structure
 
 | Path | Purpose |
 |---|---|
 | `api/` | Hono backend (TypeScript) |
 | `infrastructure/` | Caddy configs, Postgres init scripts |
-| `scripts/` | VPS setup + deployment scripts |
-| `docs/` | Architecture, deployment, operations, ADRs |
-
-## Quick Start
-
-```bash
-# Install Node 20
-nvm use
-
-# Install API deps
-cd api
-cp .env.dev.example .env
-npm install
-
-# Start local Postgres (Docker, port 5433)
-docker run -d --name fuzex-postgres-dev \
-  -e POSTGRES_DB=fuzex_social_dev \
-  -e POSTGRES_USER=fuzex_api_dev \
-  -e POSTGRES_PASSWORD=devpassword \
-  -p 5433:5432 \
-  --restart unless-stopped \
-  postgres:16
-
-# Dev server
-npm run dev
-```
-
-## Documentation
-
-- [`docs/architecture.md`](./docs/architecture.md) — system design
-- [`docs/deployment.md`](./docs/deployment.md) — deploy guide
-- [`docs/operations.md`](./docs/operations.md) — day-2 ops
-- [`docs/api-reference.md`](./docs/api-reference.md) — endpoint reference
+| `scripts/` | VPS setup + deployment + seeds |
+| `docs/` | Architecture, deployment, operations, ADRs, prompts |
 
 ## License
 
