@@ -100,6 +100,10 @@ Threshold remains 70% on all metrics.
 
 - TypeScript's `@/` path alias is NOT rewritten by `tsc` in compiled output. The build script must run `tsc-alias -p tsconfig.build.json` after `tsc -p tsconfig.build.json` so that compiled `dist/*.js` files have their `@/...` imports replaced with proper relative paths. tsx (dev) and Jest (tests) handle this differently — they rewrite at runtime.
 
+- `firebase-admin` v13 depends on `@google-cloud/firestore`, which marks some submodules as optional/platform-specific. Using `npm ci --omit=optional` strips them, causing `Cannot find module '@google-cloud/firestore/build/src/path'` at runtime when the firestore module is imported. Production deploy must use plain `npm ci` (no `--omit=optional`) so transitive optional deps are kept.
+
+- After resolving the npm ci issue, fuzex-api must be restarted via `pm2 restart fuzex-api`. `pm2 reload` (the deploy.sh default) reuses the Node process and won't re-resolve missing modules. For dependency changes, use `pm2 restart` (full process replacement).
+
 ## Caddy + Bluesky PDS TLS interactions
 
 - PDS `/tls-check` only approves cert issuance for hostnames that match a registered handle on the PDS. Hostnames outside the configured `PDS_SERVICE_HANDLE_DOMAINS` get `InvalidRequest: handles are not provided on this domain`. Bare hostnames (the PDS's own service hostname) are NOT specially approved by `/tls-check` — Caddy must obtain that cert via the normal HTTP-01 challenge at startup, not via on-demand.
