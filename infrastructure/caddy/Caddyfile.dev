@@ -1,0 +1,47 @@
+{
+	email tech@fuzex.io
+	on_demand_tls {
+		ask http://localhost:3000/tls-check
+	}
+}
+
+# Bluesky PDS — main domain and any subdomain handles registered with the PDS
+*.pds.dev.fuzex.app, pds.dev.fuzex.app {
+	tls {
+		on_demand
+	}
+	reverse_proxy http://localhost:3000
+}
+
+# fuzex-api: all backend endpoints (health, resolve, future authenticated endpoints)
+api.dev.fuzex.app {
+	tls {
+		on_demand
+	}
+	reverse_proxy http://localhost:3001 {
+		header_up Host {host}
+		header_up X-Real-IP {remote_host}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# All user handle subdomains: serve /.well-known/atproto-did via fuzex-api,
+# everything else returns 404. The fuzex-api looks up the username from the
+# Host header and queries Postgres for the DID.
+*.dev.fuzex.app {
+	tls {
+		on_demand
+	}
+
+	@wellknown path /.well-known/atproto-did
+	handle @wellknown {
+		reverse_proxy http://localhost:3001 {
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		respond 404
+	}
+}
