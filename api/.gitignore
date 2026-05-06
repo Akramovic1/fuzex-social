@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.dev.example
+logs/
+*.log
+*.tsbuildinfo
+.husky/_/
