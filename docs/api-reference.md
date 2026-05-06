@@ -152,7 +152,7 @@ profile record, and inserts the corresponding row in Postgres.
 without creating a new PDS account.
 **Prerequisite:** The mobile app must have written the user's profile to
 `Users/{firebase_uid}` in Firestore BEFORE calling this endpoint. fuzex-api
-reads `walletAddress`, `username`, `displayName`, `dateOfBirth`, and `gender`
+reads `walletAddress`, `username`, `name`, `dateOfBirth`, and `gender`
 from that document. See [integration-with-mobile.md](./integration-with-mobile.md).
 
 **Request body:** None — all data is sourced from the verified token + Firestore.

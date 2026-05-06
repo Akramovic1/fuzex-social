@@ -15,7 +15,7 @@ const HANDLE_DOMAIN = '.dev.fuzex.app';
 const VALID_FIRESTORE_USER: FirestoreUser = {
   walletAddress: '0x0000000000000000000000000000000000000001',
   username: 'akram',
-  displayName: 'Akram',
+  name: 'Akram',
   dateOfBirth: '1990-01-01',
   gender: 'male',
 };

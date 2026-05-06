@@ -37,7 +37,7 @@ function buildFakeFirestore(store: FakeStore): Firestore {
 const VALID_USER = {
   walletAddress: '0x0000000000000000000000000000000000000001',
   username: 'akram',
-  displayName: 'Akram',
+  name: 'Akram',
   dateOfBirth: '1990-01-01',
   gender: 'male',
 };
@@ -107,7 +107,7 @@ describe('FirestoreUserService.fetchUser', () => {
 
   it('throws BadRequestError when a required field is missing', async () => {
     const store: FakeStore = {
-      Users: new Map([['uid-1', { ...VALID_USER, displayName: undefined }]]),
+      Users: new Map([['uid-1', { ...VALID_USER, name: undefined }]]),
     };
     const svc = new FirestoreUserService(buildFakeFirestore(store), {
       sleep: async () => undefined,

@@ -84,7 +84,7 @@ social-layer data lives in the VPS Postgres.
 - **Firebase Auth** — issues ID tokens used by Phase 2 endpoints; verified
   via `firebase-admin` SDK on every request.
 - **Firestore** — `Users/{firebase_uid}` document is the source of truth
-  for profile data (walletAddress, username, displayName, dateOfBirth,
+  for profile data (walletAddress, username, name, dateOfBirth,
   gender). fuzex-api reads it at signup with retry; see
   [decisions/0005-firestore-as-source-of-truth-for-profile-data.md](./decisions/0005-firestore-as-source-of-truth-for-profile-data.md).
 
@@ -150,7 +150,7 @@ Mobile app
   1. Firebase Auth signup → Firebase ID token
   2. Embedded wallet system creates wallet → wallet address
   3. Mobile writes Users/{firebase_uid} in Firestore
-       { walletAddress, username, displayName, dateOfBirth, gender }
+       { walletAddress, username, name, dateOfBirth, gender }
   4. POST https://dev-api.fuzex.app/v1/atproto/createAccount
        Authorization: Bearer <firebase-id-token>
                                     ↓

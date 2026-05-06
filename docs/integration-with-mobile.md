@@ -38,7 +38,7 @@ step 4 calls fuzex-api.
 ┌──────────────────────────────────────────────────────────────┐
 │ 3. Firestore profile write                                    │
 │    Mobile writes Users/{firebase_uid} with:                   │
-│      walletAddress, username, displayName, dateOfBirth, gender   │
+│      walletAddress, username, name, dateOfBirth, gender       │
 └──────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -57,7 +57,7 @@ Write to `Users/{firebase_uid}`:
 {
   "walletAddress": "0xabcdef0123456789abcdef0123456789abcdef01",
   "username": "akram",
-  "displayName": "Akram",
+  "name": "Akram",
   "dateOfBirth": "1990-01-15",
   "gender": "male"
 }
@@ -67,7 +67,7 @@ Write to `Users/{firebase_uid}`:
 |---|---|---|
 | `walletAddress` | string | `0x` + 40 hex chars |
 | `username` | string | 3-20 chars, lowercase + digits + hyphen, NOT in reserved list |
-| `displayName` | string | 1-64 chars |
+| `name` | string | 1-64 chars. Mapped automatically to atproto's `displayName` profile field and to the Postgres `display_name` column. |
 | `dateOfBirth` | string | ISO 8601 date `YYYY-MM-DD` |
 | `gender` | string | one of `female`, `male`, `prefer_not_to_say` |
 

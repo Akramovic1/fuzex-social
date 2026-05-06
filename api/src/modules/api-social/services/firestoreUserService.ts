@@ -18,7 +18,9 @@ export const firestoreUserSchema = z.object({
     .min(3, 'username must be at least 3 characters')
     .max(20, 'username must be at most 20 characters')
     .regex(/^[a-z0-9-]+$/, 'username may only contain lowercase letters, digits, and hyphens'),
-  displayName: z.string().min(1).max(64),
+  // Firestore field is called `name`; fuzex-api maps it to the Postgres
+  // `display_name` column and to atproto's `displayName` profile field.
+  name: z.string().min(1).max(64),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dateOfBirth must be ISO YYYY-MM-DD'),
   gender: z.enum(['female', 'male', 'prefer_not_to_say']),
 });

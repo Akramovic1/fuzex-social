@@ -121,8 +121,10 @@ export class CreateAccountService {
 
     // 8. Best-effort profile write
     try {
+      // Firestore stores the user-facing name as `name`; atproto's
+      // app.bsky.actor.profile expects it as `displayName`. Map here.
       await this.pdsClient.putProfile(pdsResult.accessJwt, pdsResult.did, {
-        displayName: firestoreUser.displayName,
+        displayName: firestoreUser.name,
       });
       log.info('createAccount: bluesky profile written');
     } catch (err) {
@@ -142,7 +144,8 @@ export class CreateAccountService {
       authProvider: firebaseAuth.authProvider,
       emailVerified: firebaseAuth.emailVerified,
       phoneVerified: firebaseAuth.phoneVerified,
-      displayName: firestoreUser.displayName,
+      // Firestore -> Postgres mapping: `name` -> `display_name`.
+      displayName: firestoreUser.name,
       dateOfBirth: firestoreUser.dateOfBirth,
       gender: firestoreUser.gender,
       countryCode: null,
@@ -167,7 +170,7 @@ export class CreateAccountService {
     return {
       did: inserted.did,
       handle: inserted.handle,
-      displayName: firestoreUser.displayName,
+      displayName: firestoreUser.name,
     };
   }
 }
