@@ -183,3 +183,81 @@ By default, `deploy.sh` deploys `main`. To deploy another branch:
 ```bash
 DEPLOY_BRANCH=feature/my-branch bash /opt/fuzex-social/scripts/deploy.sh
 ```
+
+## Phase 2 setup (Firebase + PDS admin)
+
+The Phase 2 endpoints (`/v1/atproto/createAccount`, `/v1/atproto/getSession`)
+need additional configuration beyond Phase 1:
+
+### 1. Firebase service account
+
+Generate a service account JSON in the Firebase Console:
+
+- Project: `fuzex-41211`
+- Roles: `Firebase Authentication Admin`, `Cloud Datastore User` (Firestore reads)
+
+Copy it to the VPS (mode 600):
+
+```bash
+scp ~/path/to/fuzex-dev-service-account.json \
+  fuzex-pds-dev:/opt/fuzex-social/api/firebase-service-account.json
+ssh fuzex-pds-dev 'chmod 600 /opt/fuzex-social/api/firebase-service-account.json'
+```
+
+### 2. Update `.env` on the VPS
+
+Add the Phase 2 variables to `/opt/fuzex-social/api/.env`:
+
+```
+FIREBASE_PROJECT_ID=fuzex-41211
+FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json
+
+PDS_ADMIN_USERNAME=admin
+PDS_ADMIN_PASSWORD=<from password manager: "Dev PDS — Admin Password">
+PDS_INVITE_REQUIRED=true
+
+DEFAULT_WALLET_CHAIN=ethereum
+SYNTHETIC_EMAIL_DOMAIN=email.fuzex.app
+MIN_USER_AGE=13
+
+# Generate a strong key:
+#   openssl rand -base64 48 | tr -d '=+/' | cut -c1-48
+PDS_PASSWORD_ENCRYPTION_KEY=<a-strong-48-char-string>
+```
+
+Save `PDS_PASSWORD_ENCRYPTION_KEY` in the password manager. Losing it makes
+existing encrypted PDS passwords unrecoverable (users would have to re-create
+their PDS accounts via Phase 3 reset flow).
+
+### 3. Run the migration
+
+```bash
+cd /opt/fuzex-social/api
+npm run db:migrate
+```
+
+This applies `0001_phase2_user_fields.sql`, adding the new columns to
+`users`. The migration is non-destructive — existing rows (e.g. the seeded
+`akram`) stay valid; new columns get their defaults.
+
+### 4. Deploy
+
+```bash
+bash /opt/fuzex-social/scripts/deploy.sh
+```
+
+The deploy script picks up the new env vars and the new code.
+
+### 5. End-to-end verify
+
+From your local machine, with a valid Firebase ID token from the Flutter
+app pointed at the dev project:
+
+```bash
+curl -i -X POST https://dev-api.fuzex.app/v1/atproto/createAccount \
+  -H "Authorization: Bearer <firebase-id-token>"
+```
+
+Expected: `201 Created` with `{ did, handle, displayName }`. See
+[integration-with-mobile.md](./integration-with-mobile.md) for the full
+flow.

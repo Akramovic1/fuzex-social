@@ -1,24 +1,55 @@
 import { sql } from 'drizzle-orm';
-import { boolean, index, inet, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  index,
+  inet,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
-export const users = pgTable('users', {
-  id: uuid('id')
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  firebaseUid: text('firebase_uid').notNull().unique(),
-  username: text('username').notNull().unique(),
-  handle: text('handle').notNull().unique(),
-  did: text('did').notNull().unique(),
-  walletAddress: text('wallet_address').notNull(),
-  chain: text('chain').notNull().default('ethereum'),
-  tippingEnabled: boolean('tipping_enabled').notNull().default(true),
-  createdAt: timestamp('created_at', { withTimezone: true })
-    .notNull()
-    .default(sql`NOW()`),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .default(sql`NOW()`),
-});
+export const users = pgTable(
+  'users',
+  {
+    id: uuid('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    firebaseUid: text('firebase_uid').notNull().unique(),
+    username: text('username').notNull().unique(),
+    handle: text('handle').notNull().unique(),
+    did: text('did').notNull().unique(),
+    walletAddress: text('wallet_address').notNull(),
+    chain: text('chain').notNull().default('ethereum'),
+    tippingEnabled: boolean('tipping_enabled').notNull().default(true),
+
+    // Phase 2 additions
+    email: text('email'),
+    phoneNumber: text('phone_number'),
+    authProvider: text('auth_provider').notNull().default('password'),
+    emailVerified: boolean('email_verified').notNull().default(false),
+    phoneVerified: boolean('phone_verified').notNull().default(false),
+    displayName: text('display_name'),
+    dateOfBirth: date('date_of_birth'),
+    sex: text('sex'),
+    countryCode: text('country_code'),
+    locale: text('locale').notNull().default('en'),
+    status: text('status').notNull().default('active'),
+    pdsPasswordEncrypted: text('pds_password_encrypted'),
+
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .notNull()
+      .default(sql`NOW()`),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .default(sql`NOW()`),
+  },
+  (table) => ({
+    statusIdx: index('users_status_idx').on(table.status),
+  }),
+);
 
 export const auditLogs = pgTable(
   'audit_logs',

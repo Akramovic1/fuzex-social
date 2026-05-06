@@ -74,6 +74,19 @@ social-layer data lives in the VPS Postgres.
   - `GET /health` — liveness + DB ping
   - `GET /.well-known/atproto-did` — handle resolution from Postgres
   - `GET /v1/resolve/:handle` — public tipping resolver
+- Endpoints (Phase 2):
+  - `GET /v1/username/check` — pre-signup availability check
+  - `POST /v1/atproto/createAccount` — Firebase-authenticated account creation
+  - `POST /v1/atproto/getSession` — issue PDS session for an existing user
+
+### Firebase (external dependency, Phase 2)
+
+- **Firebase Auth** — issues ID tokens used by Phase 2 endpoints; verified
+  via `firebase-admin` SDK on every request.
+- **Firestore** — `Users/{firebase_uid}` document is the source of truth
+  for profile data (walletAddress, username, displayName, dateOfBirth,
+  sex). fuzex-api reads it at signup with retry; see
+  [decisions/0005-firestore-as-source-of-truth-for-profile-data.md](./decisions/0005-firestore-as-source-of-truth-for-profile-data.md).
 
 ### PostgreSQL
 
@@ -81,6 +94,10 @@ social-layer data lives in the VPS Postgres.
 - Listens on localhost only (firewalled from public internet)
 - Database `fuzex_social`, user `fuzex_api`
 - 3 tables: `users`, `audit_logs`, `invite_codes`
+- Phase 2 extends `users` with profile fields (`email`, `phone_number`,
+  `display_name`, `date_of_birth`, `sex`, `auth_provider`, etc.) and an
+  encrypted per-user PDS password (`pds_password_encrypted`). See
+  [decisions/0006-encrypted-pds-passwords-in-postgres.md](./decisions/0006-encrypted-pds-passwords-in-postgres.md).
 
 ## Request flows
 
@@ -126,12 +143,41 @@ App reads walletAddress, executes wallet transfer directly
   (FuzeX backend is NOT in the funds path — it's a name resolver only)
 ```
 
+### Account creation (Phase 2)
+
+```
+Mobile app
+  1. Firebase Auth signup → Firebase ID token
+  2. Embedded wallet system creates wallet → wallet address
+  3. Mobile writes Users/{firebase_uid} in Firestore
+       { walletAddress, username, displayName, dateOfBirth, sex }
+  4. POST https://dev-api.fuzex.app/v1/atproto/createAccount
+       Authorization: Bearer <firebase-id-token>
+                                    ↓
+fuzex-api createAccount flow
+  - firebaseAuthMiddleware: verifyIdToken via firebase-admin
+  - idempotency: return existing identity if user already in Postgres
+  - FirestoreUserService.fetchUser(uid) (with 3 retries on missing doc)
+  - validate age >= MIN_USER_AGE (default 13)
+  - pre-check username uniqueness in Postgres
+  - PdsAdminClient.createInviteCode (if PDS_INVITE_REQUIRED)
+  - PdsAdminClient.createAccount({ email, handle, password, inviteCode })
+       (email is real or phone-synthesized — see ADR 0004)
+  - PdsAdminClient.putProfile (best-effort; failure is logged, not fatal)
+  - usersRepository.createWithProfile (encrypted PDS password)
+  - auditLogsRepository.create (action='account_created')
+  - return { did, handle, displayName }
+```
+
 ## Why these choices
 
 See ADRs in `docs/decisions/` for the reasoning behind:
-- Postgres on the VPS (not Firestore for this layer)
-- No Redis cache in Phase 1
-- Existing Firestore data stays in Firestore
+- Postgres on the VPS (not Firestore for this layer) — `0001`
+- No Redis cache in Phase 1 — `0002`
+- Existing Firestore data stays in Firestore — `0003`
+- Synthetic email for phone-only users — `0004`
+- Firestore as source of truth for profile data — `0005`
+- Encrypted PDS passwords in Postgres (Phase 2) — `0006`
 
 ## Security
 

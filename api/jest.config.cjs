@@ -37,6 +37,7 @@ module.exports = {
     '!src/shared/db/migrations/**',
     '!src/shared/db/migrationRunner.ts',
     '!src/shared/testing/**',
+    '!src/shared/firebase/**',
   ],
   coverageThreshold: {
     global: {

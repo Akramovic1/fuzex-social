@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Added (Phase 2)
+- `firebase-admin` SDK integration for ID-token verification + Firestore reads
+- Firebase auth middleware (`createFirebaseAuthMiddleware`) verifying Bearer tokens via `verifyIdToken`
+- `FirestoreUserService` reading `Users/{firebase_uid}` with retry on missing doc and zod validation
+- `PdsAdminClient` wrapping `createInviteCode`, `createAccount`, `createSession`, `putProfile` XRPC endpoints
+- AES-256-GCM encryption utility (`@/shared/utils/encryption.ts`) for at-rest PDS password storage
+- `BadRequestError`, `ConflictError`, `UnprocessableEntityError` AppError subclasses
+- `AuditLogsRepository` with `create({ action, success, metadata, correlationId })` matching the existing schema
+- `UsersRepository.createWithProfile()` and supporting Phase 2 fields
+- `CreateAccountService` orchestrating the full signup flow: idempotency → Firestore → age check → username uniqueness → invite → PDS account → profile write → DB insert → audit log
+- `GetSessionService` issuing fresh PDS sessions for existing users via decrypted password
+- `POST /v1/atproto/createAccount` endpoint (Firebase-authenticated, returns DID + handle)
+- `POST /v1/atproto/getSession` endpoint (Firebase-authenticated, returns access + refresh JWTs)
+- `GET /v1/username/check` endpoint with discriminated reasons (`TOO_SHORT`, `RESERVED`, `ALREADY_TAKEN`, etc.)
+- Migration `0001_phase2_user_fields.sql` adding profile columns + encrypted password to `users`
+- 50 new tests across encryption, firebase auth middleware, syntheticEmail, pdsAdminClient (mock-fetch), firestoreUserService (fake firestore), createAccountService (real test DB + mocks), getSessionService, username route, atproto route auth gate
+- Coverage exclusion for `src/shared/firebase/**` (production singleton; documented in NewKnowledgeBase)
+- 3 new ADRs: `0004` (synthetic email), `0005` (Firestore as profile SoT), `0006` (encrypted PDS passwords)
+- `docs/integration-with-mobile.md` — concrete Flutter signup flow guide
+
+### Added (Phase 1)
 - Initial monorepo scaffold
 - TypeScript + Hono + Drizzle tooling configuration
 - ESLint, Prettier, Husky, lint-staged, commitlint setup

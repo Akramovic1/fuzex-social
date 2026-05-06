@@ -1,7 +1,14 @@
 import { serve, type ServerType } from '@hono/node-server';
 
+import { PdsAdminClient } from '@/modules/api-social/lib/pdsAdminClient.js';
+import {
+  CreateAccountService,
+  FirestoreUserService,
+  GetSessionService,
+} from '@/modules/api-social/services/index.js';
 import { config } from '@/shared/config/index.js';
 import { closeDb, getDb } from '@/shared/db/index.js';
+import { AuditLogsRepository, UsersRepository } from '@/shared/db/repositories/index.js';
 import { logger } from '@/shared/logger/index.js';
 
 import { buildApp } from './app.js';
@@ -10,7 +17,20 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 function startServer(): ServerType {
   const db = getDb();
-  const app = buildApp({ db });
+
+  const usersRepo = new UsersRepository(db);
+  const auditRepo = new AuditLogsRepository(db);
+  const pdsClient = new PdsAdminClient();
+  const firestoreUserService = new FirestoreUserService();
+  const createAccountService = new CreateAccountService(
+    firestoreUserService,
+    pdsClient,
+    usersRepo,
+    auditRepo,
+  );
+  const getSessionService = new GetSessionService(usersRepo, pdsClient);
+
+  const app = buildApp({ db, createAccountService, getSessionService });
 
   const server = serve(
     {

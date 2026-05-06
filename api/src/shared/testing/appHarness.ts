@@ -2,6 +2,10 @@ import { serve, type ServerType } from '@hono/node-server';
 import { type Hono } from 'hono';
 
 import { buildApp } from '@/app.js';
+import {
+  type CreateAccountService,
+  type GetSessionService,
+} from '@/modules/api-social/services/index.js';
 import { closePool } from '@/shared/db/client.js';
 
 import { createTestDb, type TestDbHandle } from './testDb.js';
@@ -13,6 +17,12 @@ export interface AppHarness {
   readonly testDb: TestDbHandle;
 }
 
+export interface BuildAppHarnessOptions {
+  /** Optional Phase 2 service stubs. If omitted, atproto routes are not mounted. */
+  readonly createAccountService?: CreateAccountService;
+  readonly getSessionService?: GetSessionService;
+}
+
 /**
  * Builds a fully-wired app bound to a test database, listening on an
  * ephemeral port. Returns the Node http server so supertest can drive it.
@@ -21,11 +31,20 @@ export interface AppHarness {
  *   1. Closes the http server
  *   2. Closes the test DB pool
  *
+ * @param options - Optional Phase 2 service overrides.
  * @returns An AppHarness with the running server and a cleanup function.
  */
-export async function buildAppHarness(): Promise<AppHarness> {
+export async function buildAppHarness(options: BuildAppHarnessOptions = {}): Promise<AppHarness> {
   const testDb = createTestDb();
-  const app = buildApp({ db: testDb.db });
+  const app = buildApp({
+    db: testDb.db,
+    ...(options.createAccountService !== undefined
+      ? { createAccountService: options.createAccountService }
+      : {}),
+    ...(options.getSessionService !== undefined
+      ? { getSessionService: options.getSessionService }
+      : {}),
+  });
 
   const server = await new Promise<ServerType>((resolve) => {
     const s = serve({ fetch: app.fetch, port: 0 }, () => resolve(s));

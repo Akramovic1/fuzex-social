@@ -2,6 +2,10 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 
 import { buildApiSocialModule } from '@/modules/api-social/index.js';
+import {
+  type CreateAccountService,
+  type GetSessionService,
+} from '@/modules/api-social/services/index.js';
 import { config } from '@/shared/config/index.js';
 import { type Database } from '@/shared/db/index.js';
 import {
@@ -13,6 +17,10 @@ import {
 
 export interface AppDependencies {
   readonly db: Database;
+  /** Phase 2: provided in production; omitted by Phase 1 tests. */
+  readonly createAccountService?: CreateAccountService;
+  /** Phase 2: provided in production; omitted by Phase 1 tests. */
+  readonly getSessionService?: GetSessionService;
 }
 
 /**
@@ -59,6 +67,12 @@ export function buildApp(deps: AppDependencies): Hono {
     buildApiSocialModule({
       db: deps.db,
       handleDomain: config.env.HANDLE_DOMAIN,
+      ...(deps.createAccountService !== undefined
+        ? { createAccountService: deps.createAccountService }
+        : {}),
+      ...(deps.getSessionService !== undefined
+        ? { getSessionService: deps.getSessionService }
+        : {}),
     }),
   );
 

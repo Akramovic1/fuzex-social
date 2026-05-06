@@ -120,10 +120,129 @@ Every response includes:
 
 CORS exposes these headers to browsers via `Access-Control-Expose-Headers`.
 
-## Phase 2 (not yet implemented)
+## Authentication
+
+Phase 2 endpoints require a Firebase ID token in the `Authorization` header:
+
+```
+Authorization: Bearer <firebase-id-token>
+```
+
+The token is verified via the firebase-admin SDK using the project's service
+account. fuzex-api never sees the user's password; it relies on Firebase Auth
+for identity. Tokens are short-lived (1 hour); the mobile client refreshes them
+on demand using the Firebase SDK.
+
+Failures return 401 with one of these messages:
+
+| Cause | message |
+|---|---|
+| Header missing | `missing Authorization header` |
+| Wrong scheme | `Authorization header must use Bearer scheme` |
+| Empty token | `Bearer token is empty` |
+| Verification failed | `invalid or expired token` |
+
+## POST /v1/atproto/createAccount
+
+Creates a Bluesky PDS account for the authenticated Firebase user, writes the
+profile record, and inserts the corresponding row in Postgres.
+
+**Auth:** Firebase ID token (Bearer)
+**Idempotency:** If the user already has a row, returns the existing identity
+without creating a new PDS account.
+**Prerequisite:** The mobile app must have written the user's profile to
+`Users/{firebase_uid}` in Firestore BEFORE calling this endpoint. fuzex-api
+reads `walletAddress`, `username`, `displayName`, `dateOfBirth`, and `sex`
+from that document. See [integration-with-mobile.md](./integration-with-mobile.md).
+
+**Request body:** None — all data is sourced from the verified token + Firestore.
+
+**Response 201:**
+
+```json
+{
+  "did": "did:plc:cwbqnunxsu7isx4vv4zul4un",
+  "handle": "akram.dev.fuzex.app",
+  "displayName": "Akram"
+}
+```
+
+**Errors:**
+
+| Status | code | When |
+|---|---|---|
+| 401 | `UNAUTHORIZED` | Missing / invalid Firebase token |
+| 404 | `NOT_FOUND` | Firestore `Users/{uid}` doc missing after retries |
+| 400 | `BAD_REQUEST` | Firestore doc fails schema validation |
+| 422 | `UNPROCESSABLE_ENTITY` | User is under `MIN_USER_AGE` (default 13) |
+| 409 | `CONFLICT` | Requested username is already taken |
+| 500 | `INTERNAL_ERROR` | PDS createAccount or insert failed unexpectedly |
+
+## POST /v1/atproto/getSession
+
+Issues a fresh PDS session (access + refresh JWTs) for an existing user.
+
+**Auth:** Firebase ID token (Bearer)
+**Request body:** None.
+
+**Response 200:**
+
+```json
+{
+  "did": "did:plc:cwbqnunxsu7isx4vv4zul4un",
+  "handle": "akram.dev.fuzex.app",
+  "accessJwt": "<pds-access-jwt>",
+  "refreshJwt": "<pds-refresh-jwt>"
+}
+```
+
+The access JWT is short-lived; clients use the refresh JWT against the PDS
+directly via the standard atproto `com.atproto.server.refreshSession` flow.
+
+**Errors:**
+
+| Status | code | When |
+|---|---|---|
+| 401 | `UNAUTHORIZED` | Missing / invalid Firebase token |
+| 404 | `NOT_FOUND` | No atproto account for this Firebase UID — call `createAccount` first |
+| 400 | `BAD_REQUEST` | Account predates Phase 2 (no encrypted PDS password stored) |
+
+## GET /v1/username/check
+
+Checks whether a username is available. Used by mobile during signup form
+input. No auth required.
+
+**Query parameters:**
+
+| Param | Type | Notes |
+|---|---|---|
+| `username` | string | The candidate username (any case; lowercased server-side) |
+
+**Response 200:**
+
+```json
+{
+  "username": "akram",
+  "available": false,
+  "reason": "ALREADY_TAKEN"
+}
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `username` | string | Echoed back, lowercased |
+| `available` | boolean | True iff the username could be claimed right now |
+| `reason` | string \| null | `null` when available; otherwise one of: `TOO_SHORT`, `TOO_LONG`, `INVALID_CHARSET`, `STARTS_OR_ENDS_WITH_HYPHEN`, `CONSECUTIVE_HYPHENS`, `ONLY_DIGITS`, `RESERVED`, `ALREADY_TAKEN` |
+
+**Errors:**
+
+| Status | code | When |
+|---|---|---|
+| 400 | `BAD_REQUEST` | Missing `username` query parameter |
+
+## Phase 3 (not yet implemented)
 
 | Method | Path | Auth |
 |---|---|---|
-| POST | /atproto/createAccount | Firebase ID token |
-| POST | /atproto/getSession | Wallet signature |
-| POST | /atproto/deleteAccount | Wallet signature |
+| POST | /v1/atproto/deleteAccount | Wallet signature |
+| POST | /v1/profile/update | Firebase ID token |

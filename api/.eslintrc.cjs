@@ -65,6 +65,9 @@ module.exports = {
       files: ['**/*.test.ts', '**/__tests__/**/*.ts'],
       rules: {
         '@typescript-eslint/no-explicit-any': 'off',
+        // Test mocks frequently need to match async signatures even when the
+        // mock body is synchronous; flagging every such fake is noise.
+        '@typescript-eslint/require-await': 'off',
       },
     },
     {
