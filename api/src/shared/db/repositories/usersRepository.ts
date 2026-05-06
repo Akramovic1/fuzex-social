@@ -18,7 +18,7 @@ export interface CreateUserWithProfileInput {
   readonly displayName: string;
   /** ISO YYYY-MM-DD */
   readonly dateOfBirth: string;
-  readonly sex: 'female' | 'male' | 'prefer_not_to_say';
+  readonly gender: 'female' | 'male' | 'prefer_not_to_say';
   readonly countryCode: string | null;
   readonly locale: string;
   /** AES-256-GCM ciphertext bundle from `encrypt()`. */
@@ -65,7 +65,7 @@ export class UsersRepository {
       phoneVerified: input.phoneVerified,
       displayName: input.displayName,
       dateOfBirth: input.dateOfBirth,
-      sex: input.sex,
+      gender: input.gender,
       countryCode: input.countryCode,
       locale: input.locale,
       pdsPasswordEncrypted: input.pdsPasswordEncrypted,

@@ -10,7 +10,7 @@ At signup, fuzex-api needs to know:
 - The username they want to claim
 - Their display name
 - Their date of birth (for age gating)
-- Their sex / gender preference (for app-level features)
+- Their gender (for app-level features)
 
 We could pass this data:
 

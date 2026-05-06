@@ -38,7 +38,7 @@ step 4 calls fuzex-api.
 ┌──────────────────────────────────────────────────────────────┐
 │ 3. Firestore profile write                                    │
 │    Mobile writes Users/{firebase_uid} with:                   │
-│      walletAddress, username, displayName, dateOfBirth, sex   │
+│      walletAddress, username, displayName, dateOfBirth, gender   │
 └──────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -59,7 +59,7 @@ Write to `Users/{firebase_uid}`:
   "username": "akram",
   "displayName": "Akram",
   "dateOfBirth": "1990-01-15",
-  "sex": "male"
+  "gender": "male"
 }
 ```
 
@@ -69,7 +69,7 @@ Write to `Users/{firebase_uid}`:
 | `username` | string | 3-20 chars, lowercase + digits + hyphen, NOT in reserved list |
 | `displayName` | string | 1-64 chars |
 | `dateOfBirth` | string | ISO 8601 date `YYYY-MM-DD` |
-| `sex` | string | one of `female`, `male`, `prefer_not_to_say` |
+| `gender` | string | one of `female`, `male`, `prefer_not_to_say` |
 
 If any field is missing or invalid, fuzex-api returns `400 BAD_REQUEST`
 with a descriptive `error.message`.

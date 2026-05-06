@@ -15,7 +15,7 @@ ALTER TABLE "users" ADD COLUMN "display_name" text;
 --> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "date_of_birth" date;
 --> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "sex" text;
+ALTER TABLE "users" ADD COLUMN "gender" text;
 --> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "country_code" text;
 --> statement-breakpoint
@@ -28,8 +28,8 @@ ALTER TABLE "users" ADD COLUMN "pds_password_encrypted" text;
 ALTER TABLE "users" ADD CONSTRAINT "users_status_valid"
   CHECK ("status" IN ('active', 'suspended', 'deleted'));
 --> statement-breakpoint
-ALTER TABLE "users" ADD CONSTRAINT "users_sex_valid"
-  CHECK ("sex" IS NULL OR "sex" IN ('female', 'male', 'prefer_not_to_say'));
+ALTER TABLE "users" ADD CONSTRAINT "users_gender_valid"
+  CHECK ("gender" IS NULL OR "gender" IN ('female', 'male', 'prefer_not_to_say'));
 --> statement-breakpoint
 -- NOTE: "must have email or phone" is enforced in application code
 -- (createAccountService) rather than via a CHECK constraint, because the

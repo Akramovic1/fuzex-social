@@ -144,7 +144,7 @@ export class CreateAccountService {
       phoneVerified: firebaseAuth.phoneVerified,
       displayName: firestoreUser.displayName,
       dateOfBirth: firestoreUser.dateOfBirth,
-      sex: firestoreUser.sex,
+      gender: firestoreUser.gender,
       countryCode: null,
       locale: 'en',
       pdsPasswordEncrypted: encrypt(pdsPassword),

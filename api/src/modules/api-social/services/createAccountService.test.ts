@@ -17,7 +17,7 @@ const VALID_FIRESTORE_USER: FirestoreUser = {
   username: 'akram',
   displayName: 'Akram',
   dateOfBirth: '1990-01-01',
-  sex: 'male',
+  gender: 'male',
 };
 
 const VALID_AUTH: FirebaseAuthContext = {

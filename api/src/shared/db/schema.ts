@@ -33,7 +33,7 @@ export const users = pgTable(
     phoneVerified: boolean('phone_verified').notNull().default(false),
     displayName: text('display_name'),
     dateOfBirth: date('date_of_birth'),
-    sex: text('sex'),
+    gender: text('gender'),
     countryCode: text('country_code'),
     locale: text('locale').notNull().default('en'),
     status: text('status').notNull().default('active'),

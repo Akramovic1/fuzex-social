@@ -20,7 +20,7 @@ export const firestoreUserSchema = z.object({
     .regex(/^[a-z0-9-]+$/, 'username may only contain lowercase letters, digits, and hyphens'),
   displayName: z.string().min(1).max(64),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dateOfBirth must be ISO YYYY-MM-DD'),
-  sex: z.enum(['female', 'male', 'prefer_not_to_say']),
+  gender: z.enum(['female', 'male', 'prefer_not_to_say']),
 });
 
 export type FirestoreUser = z.infer<typeof firestoreUserSchema>;

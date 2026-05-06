@@ -112,7 +112,7 @@ Threshold remains 70% on all metrics.
 
 - The `users` table maps `firebase_uid` ↔ atproto identity (`did`, `handle`) ↔ wallet address. Firebase Auth holds the user identity; the embedded wallet system holds private keys in Secret Manager; fuzex-api Postgres holds only the public mappings. Wallet addresses are never private; private keys NEVER touch the VPS.
 
-- Firestore is the source of truth for user-input profile data (displayName, dateOfBirth, sex, walletAddress). fuzex-api reads it from Firestore at signup time and copies relevant fields into Postgres for atproto-related queries. There's intentional duplication between Firestore and Postgres because they serve different access patterns (Firestore = real-time mobile reads, Postgres = atproto handle resolution from Caddy/Bluesky).
+- Firestore is the source of truth for user-input profile data (displayName, dateOfBirth, gender, walletAddress). fuzex-api reads it from Firestore at signup time and copies relevant fields into Postgres for atproto-related queries. There's intentional duplication between Firestore and Postgres because they serve different access patterns (Firestore = real-time mobile reads, Postgres = atproto handle resolution from Caddy/Bluesky).
 
 - For phone-only signups (no email in Firebase token), fuzex-api synthesizes a placeholder email of the form `phone-{e164-digits-only}@email.fuzex.app` to satisfy PDS's `createAccount` email requirement. The user never sees this email; PDS uses our auto-generated password (not user-facing) for any internal needs.
 

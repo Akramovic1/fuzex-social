@@ -39,7 +39,7 @@ const VALID_USER = {
   username: 'akram',
   displayName: 'Akram',
   dateOfBirth: '1990-01-01',
-  sex: 'male',
+  gender: 'male',
 };
 
 describe('FirestoreUserService.fetchUser', () => {
@@ -51,7 +51,7 @@ describe('FirestoreUserService.fetchUser', () => {
 
     const user = await svc.fetchUser('uid-1');
     expect(user.username).toBe('akram');
-    expect(user.sex).toBe('male');
+    expect(user.gender).toBe('male');
   });
 
   it('retries on missing doc and resolves once it appears', async () => {
@@ -94,9 +94,9 @@ describe('FirestoreUserService.fetchUser', () => {
     await expect(svc.fetchUser('uid-1')).rejects.toBeInstanceOf(BadRequestError);
   });
 
-  it('throws BadRequestError when the doc has invalid sex value', async () => {
+  it('throws BadRequestError when the doc has invalid gender value', async () => {
     const store: FakeStore = {
-      Users: new Map([['uid-1', { ...VALID_USER, sex: 'unknown' }]]),
+      Users: new Map([['uid-1', { ...VALID_USER, gender: 'unknown' }]]),
     };
     const svc = new FirestoreUserService(buildFakeFirestore(store), {
       sleep: async () => undefined,
