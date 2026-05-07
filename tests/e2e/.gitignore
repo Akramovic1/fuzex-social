@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.local
+
+# Service account JSONs — never commit
+firebase-service-account.json
+firebase-*.json
+!firebase-*.example.json
+
+# Test output / cache
+coverage/
+.vitest/
+*.log

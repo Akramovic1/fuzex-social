@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **E2E test suite** (`tests/e2e/`) — separate `@fuzex/e2e` package using vitest
+  2.x + firebase-admin 12.x + plain `fetch`. Hits the **live dev backend**
+  (`https://dev-api.fuzex.social`) — no mocking. 28 tests across three layers:
+  Layer 1 smoke (12 tests, public endpoints), Layer 2 authenticated (8 tests,
+  real Firebase ID tokens via custom-token-then-exchange), Layer 3 lifecycle
+  (8 sequential steps, creates a real PDS account end-to-end). Auto-cleans
+  Firebase Auth + Firestore; prints manual VPS cleanup commands for the
+  Postgres + PDS sqlite rows it leaves behind. Sequential execution
+  (`fileParallelism: false`, `singleFork: true`) since Layer 3 has shared
+  cross-step state. See `tests/e2e/README.md`.
+
 ## 2026-05-06 — Domain migration follow-ups
 
 ### Fixed
@@ -31,6 +43,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`PDS_ADMIN_PASSWORD=PASTE_FROM_PDS_ADMIN_PWD_VARIABLE_HERE`) that was
   blocking `createAccount` calls with PDS 401. Now correctly synced from
   `/pds/pds.env`.
+- Resend domain `email.fuzex.social` verified end-to-end via direct SMTP
+  (port 587 / STARTTLS — confirmed via swaks; email arrived). Bluesky PDS's
+  email module silently no-ops when configured to use anything other than
+  port 465; Hetzner blocks 465. Marked as known limitation. PDS email is
+  not required for migration verification or mobile integration. Production
+  email flows will go through Resend HTTP API directly from fuzex-api
+  (port 443, never blocked).
+- Cleaned up an orphan PDS sqlite row (`did:plc:ztvbl26f45oauegzdb7l7f7o`,
+  email `akram@fuzex.io`) left over from an earlier failed `createAccount`
+  call (succeeded at PDS step, failed at fuzex-api downstream due to the
+  PDS_ADMIN_PASSWORD placeholder bug). Documented detection + cleanup
+  procedure in NewKnowledgeBase.
 
 
 ### Changed

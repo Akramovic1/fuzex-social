@@ -1,0 +1,24 @@
+{
+  "name": "@fuzex/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end test suite for fuzex-api hitting the live dev backend.",
+  "scripts": {
+    "test": "vitest run",
+    "test:smoke": "vitest run src/tests/01-smoke",
+    "test:auth": "vitest run src/tests/02-authenticated",
+    "test:lifecycle": "vitest run src/tests/03-lifecycle",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
