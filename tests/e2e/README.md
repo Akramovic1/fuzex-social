@@ -129,8 +129,14 @@ npm run test:auth
 
 ### `Missing required env var: FIREBASE_WEB_API_KEY`
 
-Copy `.env.example` to `.env` and fill in the values. All required vars
-are listed in the configuration table above.
+Copy `.env.example` to `.env` and fill in the values. The web API key is
+technically public (it ships in mobile app binaries), but we don't commit
+it to `.env.example` to avoid GitHub secret-scanner noise. Find it in:
+- Firebase console → Project settings → General → "Web API Key"
+- The Flutter app's `firebase_options.dart`
+- `/opt/fuzex-social/api/.env` on the dev VPS
+
+All other required vars are listed in the configuration table above.
 
 ### `Firebase service account JSON not found at /path/to/...`
 
